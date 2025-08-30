@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, RotateCcw, ChevronLeft, ChevronRight, Camera, Trash2, Plus, Trophy, Target, TrendingUp, Calendar, Clock, Dumbbell, Heart, Award, CheckCircle, Circle, AlertCircle, Volume2, VolumeX, Settings, User, BarChart3, Activity, Flame, Timer, SkipForward } from 'lucide-react';
+import { Play, Pause, RotateCcw, ChevronLeft, ChevronRight, Camera, Trash2, Plus, Trophy, Target, TrendingUp, Calendar, Clock, Dumbbell, Heart, Award, CheckCircle, Circle, AlertCircle, Volume2, VolumeX, Settings, User, BarChart3, Activity, Flame, Timer, SkipForward, Youtube } from 'lucide-react';
 
 // Datos del programa de entrenamiento con videos de YouTube
 const workoutProgram = {
@@ -666,7 +666,7 @@ function App() {
                 <Calendar className="h-5 w-5 text-purple-500" />
                 Programa Semanal
               </h3>
-              <div className="grid md:grid-cols-5 gap-3">
+              <div className="grid md:grid-cols-7 gap-3">
                 {Object.entries(workoutProgram).map(([day, workout]) => (
                   <button
                     key={day}
@@ -680,9 +680,8 @@ function App() {
                         : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
                     }`}
                   >
-                    <p className="font-bold capitalize mb-1">{day}</p>
-                    <p className="text-xs opacity-80">{workout.type}</p>
-                    <p className="text-xs mt-2">{workout.exercises.length} ejercicios</p>
+                    <p className="font-bold capitalize mb-1 text-xs">{day.substring(0,3)}</p>
+                    <p className="text-xs opacity-80">{workout.exercises.length} ej.</p>
                   </button>
                 ))}
               </div>
@@ -779,148 +778,8 @@ function App() {
               </div>
 
               {/* Current Exercise */}
-{isSessionActive && (
-  <div className="bg-gray-800 rounded-xl p-6">
-    <div className="flex items-center justify-between mb-4">
-      <button
-        onClick={prevExercise}
-        disabled={currentExerciseIndex === 0}
-        className="p-2 bg-gray-700 rounded-lg hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        <ChevronLeft className="h-5 w-5 text-white" />
-      </button>
-      
-      <div className="text-center">
-        <p className="text-gray-400 text-sm">
-          Ejercicio {currentExerciseIndex + 1} de {currentWorkout.exercises.length}
-          {currentExercise.sets > 1 && ` • Serie ${currentSet}/${currentExercise.sets}`}
-        </p>
-        <h3 className="text-xl font-bold text-white mt-1">{currentExercise.name}</h3>
-      </div>
-      
-      <button
-        onClick={nextExercise}
-        disabled={currentExerciseIndex === currentWorkout.exercises.length - 1}
-        className="p-2 bg-gray-700 rounded-lg hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        <ChevronRight className="h-5 w-5 text-white" />
-      </button>
-    </div>
-
-    <div className="bg-gray-900 rounded-lg p-4 mb-4">
-      <p className="text-gray-300 mb-3">{currentExercise.description}</p>
-      
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="bg-gray-800 rounded-lg p-3">
-          <p className="text-xs text-gray-400 mb-1">Series</p>
-          <p className="text-lg font-bold text-white">{currentExercise.sets}</p>
-        </div>
-        <div className="bg-gray-800 rounded-lg p-3">
-          <p className="text-xs text-gray-400 mb-1">Repeticiones</p>
-          <p className="text-lg font-bold text-white">{currentExercise.reps}</p>
-        </div>
-        <div className="bg-gray-800 rounded-lg p-3">
-          <p className="text-xs text-gray-400 mb-1">Descanso</p>
-          <p className="text-lg font-bold text-white">{currentExercise.rest} seg</p>
-        </div>
-        <div className="bg-gray-800 rounded-lg p-3">
-          <p className="text-xs text-gray-400 mb-1">Equipo</p>
-          <p className="text-lg font-bold text-white">{currentExercise.equipment}</p>
-        </div>
-      </div>
-    </div>
-
-    {/* Botón de Video de YouTube */}
-    {currentExercise.videoUrl && (
-      <div className="mb-4">
-        
-          href={currentExercise.videoUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="w-full px-4 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
-        >
-          <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/>
-          </svg>
-          Ver Tutorial en YouTube
-        </a>
-      </div>
-    )}
-
-    {/* Exercise/Rest Timer Display */}
-    {isExerciseTimerActive && (
-      <div className="mb-6">
-        <div className={`text-center p-6 rounded-xl ${
-          timerType === 'rest' 
-            ? 'bg-gradient-to-r from-blue-600 to-cyan-600' 
-            : 'bg-gradient-to-r from-purple-600 to-pink-600'
-        }`}>
-          <p className="text-white text-sm mb-2">
-            {timerType === 'rest' ? '⏸️ DESCANSO' : '💪 EJERCICIO'}
-          </p>
-          <div className="text-6xl font-bold text-white">
-            {formatTime(exerciseTimer)}
-          </div>
-          <p className="text-white/80 text-sm mt-2">
-            {timerType === 'exercise' 
-              ? `Serie ${currentSet} de ${currentExercise.sets}`
-              : 'Prepárate para la siguiente serie'}
-          </p>
-          
-          {/* Skip button */}
-          <button
-            onClick={skipTimer}
-            className="mt-4 px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg transition-colors flex items-center justify-center gap-2 mx-auto"
-          >
-            <SkipForward className="h-4 w-4" />
-            Saltar
-          </button>
-        </div>
-      </div>
-    )}
-
-    {/* Action Buttons */}
-    <div className="grid grid-cols-2 gap-3">
-      {currentExercise.isTime && !isExerciseTimerActive && timerType !== 'rest' && (
-        <button
-          onClick={startExerciseTimer}
-          className="px-4 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
-        >
-          <Timer className="h-5 w-5" />
-          Iniciar Ejercicio ({currentExercise.duration} seg)
-        </button>
-      )}
-      
-      {currentExercise.rest > 0 && !isExerciseTimerActive && !currentExercise.isTime && (
-        <button
-          onClick={startRestTimer}
-          className="px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
-        >
-          <Timer className="h-5 w-5" />
-          Iniciar Descanso ({currentExercise.rest} seg)
-        </button>
-      )}
-      
-      <button
-        onClick={() => markExerciseComplete(currentExerciseIndex)}
-        disabled={workoutData[currentExerciseIndex]?.completed}
-        className="px-4 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
-      >
-        {workoutData[currentExerciseIndex]?.completed ? (
-          <>
-            <CheckCircle className="h-5 w-5" />
-            Completado
-          </>
-        ) : (
-          <>
-            <Circle className="h-5 w-5" />
-            Marcar Completo
-          </>
-        )}
-      </button>
-    </div>
-  </div>
-)}
+              {isSessionActive && (
+                <div className="bg-gray-800 rounded-xl p-6">
                   <div className="flex items-center justify-between mb-4">
                     <button
                       onClick={prevExercise}
@@ -969,6 +828,21 @@ function App() {
                       </div>
                     </div>
                   </div>
+
+                  {/* Botón de Video de YouTube */}
+                  {currentExercise.videoUrl && (
+                    <div className="mb-4">
+                      <a
+                        href={currentExercise.videoUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full px-4 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
+                      >
+                        <Youtube className="h-5 w-5" />
+                        Ver Tutorial en YouTube
+                      </a>
+                    </div>
+                  )}
 
                   {/* Exercise/Rest Timer Display */}
                   {isExerciseTimerActive && (
@@ -1178,9 +1052,6 @@ function App() {
                                   src={photo.url}
                                   alt={`${view} ${index}`}
                                   className="w-full h-20 object-cover rounded cursor-pointer hover:opacity-90"
-                                  onClick={() => {
-                                    // Could open in modal for larger view
-                                  }}
                                 />
                                 <button
                                   onClick={() => {
