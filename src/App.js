@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Play, Pause, RotateCcw, ChevronLeft, ChevronRight, Camera, Trash2, Plus, Trophy, Target, TrendingUp, Calendar, Clock, Dumbbell, Heart, Award, CheckCircle, Circle, AlertCircle, Volume2, VolumeX, Settings, User, BarChart3, Activity, Flame, Timer, SkipForward, Youtube } from 'lucide-react';
-
-// Datos del programa de entrenamiento con videos de YouTube
+// Datos del programa de entrenamiento con secciones organizadas y videos
 const workoutProgram = {
   lunes: {
-    name: "Tren Superior y Core",
+    name: "HIIT y Fuerza (Tren Superior)",
     description: "Calentamiento, HIIT y trabajo de fuerza",
     type: "Fuerza + HIIT",
     difficulty: "Intermedio-Alto",
@@ -12,16 +11,27 @@ const workoutProgram = {
     calories: "400-500",
     color: "from-orange-500 to-red-500",
     exercises: [
-      { name: "Estiramientos de calentamiento", type: "Calentamiento", sets: 1, reps: "5 min", rest: 0, isTime: true, duration: 300, description: "Prepara tu cuerpo con estiramientos dinámicos", videoUrl: "https://www.youtube.com/watch?v=TSIbR5WVZhA", equipment: "Ninguno" },
+      // SECCIÓN 1: CALENTAMIENTO
+      { name: "📋 CALENTAMIENTO", type: "Sección", sets: 1, reps: "", rest: 0, isTime: false, description: "Prepara tu cuerpo para el entrenamiento", videoUrl: "", equipment: "Sección" },
+      { name: "Estiramientos dinámicos", type: "Calentamiento", sets: 1, reps: "5 min", rest: 0, isTime: true, duration: 300, description: "Estiramientos para preparar el cuerpo", videoUrl: "https://www.youtube.com/watch?v=TSIbR5WVZhA", equipment: "Ninguno" },
       { name: "Carrera de calentamiento", type: "Cardio", sets: 1, reps: "1 km", rest: 0, isTime: false, description: "Carrera suave para elevar la temperatura corporal", videoUrl: "https://www.youtube.com/watch?v=kVnyY17VS9Y", equipment: "Ninguno" },
-      { name: "Bicicleta de asalto", type: "HIIT", sets: 1, reps: "15 min", rest: 0, isTime: true, duration: 900, description: "12 calorías en bicicleta de asalto", videoUrl: "https://www.youtube.com/watch?v=xxFZsIccyxQ", equipment: "Bicicleta de asalto" },
-      { name: "Clean & Press", type: "Fuerza", sets: 1, reps: "8", rest: 60, isTime: false, description: "Ejercicio compuesto para potencia total del cuerpo", videoUrl: "https://www.youtube.com/watch?v=KwYJTpQ_x5A", equipment: "Barra/Mancuernas" },
-      { name: "Flexiones", type: "Fuerza", sets: 1, reps: "10", rest: 60, isTime: false, description: "Ejercicio clásico para pecho y tríceps", videoUrl: "https://www.youtube.com/watch?v=IODxDxX7oi4", equipment: "Ninguno" },
-      { name: "Elevaciones de piernas colgado", type: "Core", sets: 3, reps: "10", rest: 60, isTime: false, description: "Fortalece el core inferior", videoUrl: "https://www.youtube.com/watch?v=Pr1ieGZ5atI", equipment: "Barra de dominadas" },
-      { name: "KB Swings", type: "HIIT", sets: 3, reps: "15", rest: 60, isTime: false, description: "Ejercicio explosivo con pesa rusa", videoUrl: "https://www.youtube.com/watch?v=YSxHifyI6s8", equipment: "Pesa rusa" },
-      { name: "Arnold Press", type: "Fuerza", sets: 3, reps: "10", rest: 60, isTime: false, description: "Press de hombros con rotación completa", videoUrl: "https://www.youtube.com/watch?v=3ml7BH7mNwQ", equipment: "Mancuernas" },
-      { name: "Rear Delt Fly", type: "Fuerza", sets: 3, reps: "10", rest: 60, isTime: false, description: "Aperturas posteriores para deltoides traseros", videoUrl: "https://www.youtube.com/watch?v=EA7u4Q_8HQ0", equipment: "Mancuernas" },
-      { name: "Elevaciones laterales con cable", type: "Fuerza", sets: 3, reps: "10", rest: 60, isTime: false, description: "Trabajo aislado de deltoides laterales", videoUrl: "https://www.youtube.com/watch?v=PPrzBWZDOhA", equipment: "Cable/Poleas" }
+      
+      // SECCIÓN 2: 15 MINUTOS HIIT
+      { name: "📋 15 MINUTOS", type: "Sección", sets: 1, reps: "", rest: 0, isTime: false, description: "Circuito de alta intensidad", videoUrl: "", equipment: "Sección" },
+      { name: "Bicicleta de asalto", type: "HIIT", sets: 1, reps: "12 cal", rest: 0, isTime: false, description: "12 calorías en bicicleta de asalto", videoUrl: "https://www.youtube.com/watch?v=xxFZsIccyxQ", equipment: "Bicicleta de asalto" },
+      { name: "Clean & Press", type: "Fuerza", sets: 1, reps: "8", rest: 0, isTime: false, description: "Ejercicio compuesto para potencia total", videoUrl: "https://www.youtube.com/watch?v=KwYJTpQ_x5A", equipment: "Barra/Mancuernas" },
+      { name: "Flexiones", type: "Fuerza", sets: 1, reps: "10", rest: 120, isTime: false, description: "Press ups - ejercicio clásico para pecho", videoUrl: "https://www.youtube.com/watch?v=IODxDxX7oi4", equipment: "Ninguno" },
+      
+      // SECCIÓN 3: 3 RONDAS CORE
+      { name: "📋 3 RONDAS", type: "Sección", sets: 1, reps: "", rest: 0, isTime: false, description: "Circuito de core y potencia", videoUrl: "", equipment: "Sección" },
+      { name: "Elevaciones de piernas colgado", type: "Core", sets: 3, reps: "10", rest: 0, isTime: false, description: "Hanging leg raises para core inferior", videoUrl: "https://www.youtube.com/watch?v=Pr1ieGZ5atI", equipment: "Barra de dominadas" },
+      { name: "KB Swings", type: "HIIT", sets: 3, reps: "15", rest: 60, isTime: false, description: "Swings con pesa rusa explosivos", videoUrl: "https://www.youtube.com/watch?v=YSxHifyI6s8", equipment: "Pesa rusa" },
+      
+      // SECCIÓN 4: 3 RONDAS HOMBROS
+      { name: "📋 3 RONDAS", type: "Sección", sets: 1, reps: "", rest: 0, isTime: false, description: "Trabajo específico de hombros", videoUrl: "", equipment: "Sección" },
+      { name: "Arnold Press", type: "Fuerza", sets: 3, reps: "10", rest: 60, isTime: false, description: "Press de hombros con rotación", videoUrl: "https://www.youtube.com/watch?v=3ml7BH7mNwQ", equipment: "Mancuernas" },
+      { name: "Rear Delt Fly", type: "Fuerza", sets: 3, reps: "10", rest: 60, isTime: false, description: "Aperturas posteriores para deltoides", videoUrl: "https://www.youtube.com/watch?v=EA7u4Q_8HQ0", equipment: "Mancuernas" },
+      { name: "Elevaciones laterales con cable", type: "Fuerza", sets: 3, reps: "10", rest: 60, isTime: false, description: "Cable side raises para deltoides laterales", videoUrl: "https://www.youtube.com/watch?v=PPrzBWZDOhA", equipment: "Cable/Poleas" }
     ]
   },
   martes: {
@@ -33,15 +43,23 @@ const workoutProgram = {
     calories: "350-450",
     color: "from-green-500 to-teal-500",
     exercises: [
-      { name: "Estiramientos de calentamiento", type: "Calentamiento", sets: 1, reps: "5 min", rest: 0, isTime: true, duration: 300, description: "Prepara tu cuerpo con estiramientos dinámicos", videoUrl: "https://www.youtube.com/watch?v=XCGupgIHmtc", equipment: "Ninguno" },
-      { name: "Carrera 1 milla", type: "Cardio", sets: 1, reps: "1.6 km", rest: 0, isTime: false, description: "Carrera a ritmo moderado", videoUrl: "https://www.youtube.com/watch?v=zy41a_RtzNo", equipment: "Ninguno" },
-      { name: "Ski Erg", type: "Cardio", sets: 1, reps: "500m", rest: 120, isTime: false, description: "Si no puedes hacer todo junto, divide en 2x250m", videoUrl: "https://www.youtube.com/watch?v=1hPxGlmWR4c", equipment: "Ski Erg" },
-      { name: "Remo", type: "Cardio", sets: 1, reps: "500m", rest: 120, isTime: false, description: "Mantén un ritmo constante", videoUrl: "https://www.youtube.com/watch?v=wAIMrW8hHuI", equipment: "Máquina de remo" },
-      { name: "Box Step Ups", type: "Fuerza", sets: 1, reps: "50", rest: 60, isTime: false, description: "Subidas al cajón alternando piernas", videoUrl: "https://www.youtube.com/watch?v=dQqApCGd5Ss", equipment: "Cajón/Step" },
-      { name: "Elevaciones de rodillas", type: "Core", sets: 1, reps: "50", rest: 60, isTime: false, description: "Eleva las rodillas al pecho alternadamente", videoUrl: "https://www.youtube.com/watch?v=2DOkNW1hEpg", equipment: "Ninguno" },
-      { name: "Hang Cleans", type: "Fuerza", sets: 1, reps: "30", rest: 90, isTime: false, description: "Cargadas colgantes explosivas", videoUrl: "https://www.youtube.com/watch?v=0aP3tDPZQcE", equipment: "Barra" },
-      { name: "FINALIZADOR: Curl con barra", type: "Fuerza", sets: 1, reps: "30", rest: 60, isTime: false, description: "Finalizador para bíceps", videoUrl: "https://www.youtube.com/watch?v=kwG2ipFRgfo", equipment: "Barra" },
-      { name: "FINALIZADOR: Extensiones de tríceps", type: "Fuerza", sets: 1, reps: "30", rest: 0, isTime: false, description: "Finalizador para tríceps", videoUrl: "https://www.youtube.com/watch?v=popGXI-qs98", equipment: "Mancuernas/Cable" }
+      // CALENTAMIENTO
+      { name: "📋 CALENTAMIENTO", type: "Sección", sets: 1, reps: "", rest: 0, isTime: false, description: "Preparación para el entrenamiento", videoUrl: "", equipment: "Sección" },
+      { name: "Estiramientos", type: "Calentamiento", sets: 1, reps: "5 min", rest: 0, isTime: true, duration: 300, description: "Warm up stretches", videoUrl: "https://www.youtube.com/watch?v=XCGupgIHmtc", equipment: "Ninguno" },
+      { name: "Carrera 1 milla", type: "Cardio", sets: 1, reps: "1.6 km", rest: 180, isTime: false, description: "0.62km - Carrera a ritmo moderado", videoUrl: "https://www.youtube.com/watch?v=zy41a_RtzNo", equipment: "Ninguno" },
+      
+      // CIRCUITO PRINCIPAL
+      { name: "📋 CIRCUITO CARDIO", type: "Sección", sets: 1, reps: "", rest: 0, isTime: false, description: "Trabajo cardiovascular principal", videoUrl: "", equipment: "Sección" },
+      { name: "Ski Erg", type: "Cardio", sets: 1, reps: "500m", rest: 0, isTime: false, description: "Si no puedes hacer todo, divide en 2x250m", videoUrl: "https://www.youtube.com/watch?v=1hPxGlmWR4c", equipment: "Ski Erg" },
+      { name: "Remo", type: "Cardio", sets: 1, reps: "500m", rest: 0, isTime: false, description: "Mantén un ritmo constante", videoUrl: "https://www.youtube.com/watch?v=wAIMrW8hHuI", equipment: "Máquina de remo" },
+      { name: "Box Step Ups", type: "Fuerza", sets: 1, reps: "50", rest: 0, isTime: false, description: "Subidas al cajón alternando piernas", videoUrl: "https://www.youtube.com/watch?v=dQqApCGd5Ss", equipment: "Cajón/Step" },
+      { name: "Elevaciones de rodillas", type: "Core", sets: 1, reps: "50", rest: 0, isTime: false, description: "Knee raises alternados", videoUrl: "https://www.youtube.com/watch?v=2DOkNW1hEpg", equipment: "Ninguno" },
+      { name: "Hang Cleans", type: "Fuerza", sets: 1, reps: "30", rest: 180, isTime: false, description: "Cargadas colgantes explosivas", videoUrl: "https://www.youtube.com/watch?v=0aP3tDPZQcE", equipment: "Barra" },
+      
+      // FINALIZADOR
+      { name: "📋 FINALIZADOR", type: "Sección", sets: 1, reps: "", rest: 0, isTime: false, description: "Finisher de brazos", videoUrl: "", equipment: "Sección" },
+      { name: "Curl con barra", type: "Fuerza", sets: 1, reps: "30", rest: 60, isTime: false, description: "Barbell curls para bíceps", videoUrl: "https://www.youtube.com/watch?v=kwG2ipFRgfo", equipment: "Barra" },
+      { name: "Extensiones de tríceps", type: "Fuerza", sets: 1, reps: "30", rest: 0, isTime: false, description: "Tricep extensions finalizador", videoUrl: "https://www.youtube.com/watch?v=popGXI-qs98", equipment: "Mancuernas/Cable" }
     ]
   },
   miercoles: {
@@ -53,11 +71,19 @@ const workoutProgram = {
     calories: "400-500",
     color: "from-purple-500 to-pink-500",
     exercises: [
-      { name: "Estiramientos", type: "Calentamiento", sets: 1, reps: "5 min", rest: 0, isTime: true, duration: 300, description: "Calentamiento con estiramientos", videoUrl: "https://www.youtube.com/watch?v=_9UqzPMYkJc", equipment: "Ninguno" },
-      { name: "Carrera 2km", type: "Cardio", sets: 1, reps: "2 km", rest: 180, isTime: false, description: "Intenta mantenerlo bajo 10 minutos. Ritmo conversacional", videoUrl: "https://www.youtube.com/watch?v=xjdNkXM-MaQ", equipment: "Ninguno" },
-      { name: "Bicicleta de asalto + Press de banca", type: "HIIT", sets: 5, reps: "16-14-12-10-8", rest: 90, isTime: false, description: "16 calorías y 16 reps, 14 cal y 14 reps, etc. Press más ligero de lo normal", videoUrl: "https://www.youtube.com/watch?v=8bbE64NuDTU", equipment: "Bicicleta + Banca" },
-      { name: "Press militar", type: "Fuerza", sets: 5, reps: "10", rest: 60, isTime: false, description: "Press de hombros estricto", videoUrl: "https://www.youtube.com/watch?v=2yjwXTZQDDI", equipment: "Barra/Mancuernas" },
-      { name: "Remo gorila", type: "Fuerza", sets: 5, reps: "10", rest: 60, isTime: false, description: "Remo alternado con mancuernas", videoUrl: "https://www.youtube.com/watch?v=a8vaVbT_lX0", equipment: "Mancuernas" }
+      // CALENTAMIENTO
+      { name: "📋 CALENTAMIENTO", type: "Sección", sets: 1, reps: "", rest: 0, isTime: false, description: "Preparación", videoUrl: "", equipment: "Sección" },
+      { name: "Estiramientos", type: "Calentamiento", sets: 1, reps: "5 min", rest: 0, isTime: true, duration: 300, description: "Warm up stretches", videoUrl: "https://www.youtube.com/watch?v=_9UqzPMYkJc", equipment: "Ninguno" },
+      { name: "Carrera 2km", type: "Cardio", sets: 1, reps: "2 km", rest: 180, isTime: false, description: "Intenta mantenerlo bajo 10 minutos", videoUrl: "https://www.youtube.com/watch?v=xjdNkXM-MaQ", equipment: "Ninguno" },
+      
+      // CIRCUITO PRINCIPAL
+      { name: "📋 16-14-12-10-8", type: "Sección", sets: 1, reps: "", rest: 0, isTime: false, description: "Pirámide descendente", videoUrl: "", equipment: "Sección" },
+      { name: "Bicicleta de asalto + Press de banca", type: "HIIT", sets: 5, reps: "16-14-12-10-8", rest: 90, isTime: false, description: "16 cal y 16 reps, luego 14 y 14, etc. Press más ligero de lo normal", videoUrl: "https://www.youtube.com/watch?v=8bbE64NuDTU", equipment: "Bicicleta + Banca" },
+      
+      // 5 RONDAS
+      { name: "📋 5 RONDAS", type: "Sección", sets: 1, reps: "", rest: 0, isTime: false, description: "Circuito de fuerza", videoUrl: "", equipment: "Sección" },
+      { name: "Press militar", type: "Fuerza", sets: 5, reps: "10", rest: 0, isTime: false, description: "Military press estricto", videoUrl: "https://www.youtube.com/watch?v=2yjwXTZQDDI", equipment: "Barra/Mancuernas" },
+      { name: "Remo gorila", type: "Fuerza", sets: 5, reps: "10", rest: 60, isTime: false, description: "Gorilla rows alternados", videoUrl: "https://www.youtube.com/watch?v=a8vaVbT_lX0", equipment: "Mancuernas" }
     ]
   },
   jueves: {
@@ -69,14 +95,22 @@ const workoutProgram = {
     calories: "450-550",
     color: "from-blue-500 to-cyan-500",
     exercises: [
-      { name: "Calentamiento en bicicleta", type: "Calentamiento", sets: 1, reps: "15 min", rest: 0, isTime: true, duration: 900, description: "Calentamiento cardiovascular suave", videoUrl: "https://www.youtube.com/watch?v=32UMvAVwoiU", equipment: "Bicicleta" },
-      { name: "Press declinado con mancuernas", type: "Fuerza", sets: 3, reps: "10", rest: 60, isTime: false, description: "De ligero a pesado, enfócate en la forma", videoUrl: "https://www.youtube.com/watch?v=OR6WM5Z2Hqs", equipment: "Mancuernas + Banco" },
-      { name: "Aperturas declinadas", type: "Fuerza", sets: 3, reps: "12,10,8", rest: 60, isTime: false, description: "Series descendentes", videoUrl: "https://www.youtube.com/watch?v=O5JH3PNxzcs", equipment: "Mancuernas + Banco" },
-      { name: "Press inclinado con mancuernas", type: "Fuerza", sets: 3, reps: "12,10,8", rest: 60, isTime: false, description: "De ligero a pesado progresivamente", videoUrl: "https://www.youtube.com/watch?v=8iPEnn-ltC8", equipment: "Mancuernas + Banco" },
-      { name: "Fondos", type: "Fuerza", sets: 3, reps: "10,8,6", rest: 90, isTime: false, description: "Asistidos o sin asistencia. Baja profundo para estirar el pecho", videoUrl: "https://www.youtube.com/watch?v=2z8JmcrW-As", equipment: "Paralelas" },
-      { name: "Press de pecho", type: "Fuerza", sets: 3, reps: "10", rest: 60, isTime: false, description: "Press de pecho en máquina o con mancuernas", videoUrl: "https://www.youtube.com/watch?v=xUm0BiZCWlQ", equipment: "Máquina/Mancuernas" },
-      { name: "Extensión de tríceps", type: "Fuerza", sets: 3, reps: "10", rest: 45, isTime: false, description: "Extensiones con cable o mancuernas", videoUrl: "https://www.youtube.com/watch?v=2-LAMcpzODU", equipment: "Cable/Mancuernas" },
-      { name: "Extensión de tríceps sobre cabeza", type: "Fuerza", sets: 3, reps: "12", rest: 45, isTime: false, description: "Extensiones sobre la cabeza para tríceps", videoUrl: "https://www.youtube.com/watch?v=YbX7Wd8jQ-Q", equipment: "Mancuerna/Cable" }
+      // CALENTAMIENTO
+      { name: "📋 CALENTAMIENTO", type: "Sección", sets: 1, reps: "", rest: 0, isTime: false, description: "Warm up", videoUrl: "", equipment: "Sección" },
+      { name: "Bicicleta 15 minutos", type: "Calentamiento", sets: 1, reps: "15 min", rest: 180, isTime: true, duration: 900, description: "Warm up bike", videoUrl: "https://www.youtube.com/watch?v=32UMvAVwoiU", equipment: "Bicicleta" },
+      
+      // PECHO PRINCIPAL
+      { name: "📋 TRABAJO DE PECHO", type: "Sección", sets: 1, reps: "", rest: 0, isTime: false, description: "Ejercicios principales de pecho", videoUrl: "", equipment: "Sección" },
+      { name: "Press declinado DB", type: "Fuerza", sets: 3, reps: "10", rest: 60, isTime: false, description: "De ligero a pesado, enfócate en la forma", videoUrl: "https://www.youtube.com/watch?v=OR6WM5Z2Hqs", equipment: "Mancuernas + Banco" },
+      { name: "Aperturas declinadas", type: "Fuerza", sets: 1, reps: "12,10,8", rest: 60, isTime: false, description: "Decline flys - series descendentes", videoUrl: "https://www.youtube.com/watch?v=O5JH3PNxzcs", equipment: "Mancuernas + Banco" },
+      { name: "Press inclinado DB", type: "Fuerza", sets: 1, reps: "12,10,8", rest: 60, isTime: false, description: "Incline DB press - de ligero a pesado", videoUrl: "https://www.youtube.com/watch?v=8iPEnn-ltC8", equipment: "Mancuernas + Banco" },
+      { name: "Fondos", type: "Fuerza", sets: 1, reps: "10,8,6", rest: 90, isTime: false, description: "Dips - asistidos o sin asistencia, baja profundo", videoUrl: "https://www.youtube.com/watch?v=2z8JmcrW-As", equipment: "Paralelas" },
+      { name: "Press de pecho", type: "Fuerza", sets: 3, reps: "10", rest: 60, isTime: false, description: "Chest press en máquina o mancuernas", videoUrl: "https://www.youtube.com/watch?v=xUm0BiZCWlQ", equipment: "Máquina/Mancuernas" },
+      
+      // TRÍCEPS
+      { name: "📋 TRABAJO DE TRÍCEPS", type: "Sección", sets: 1, reps: "", rest: 0, isTime: false, description: "Ejercicios de tríceps", videoUrl: "", equipment: "Sección" },
+      { name: "Extensión de tríceps", type: "Fuerza", sets: 3, reps: "10", rest: 45, isTime: false, description: "Tricep extension con cable", videoUrl: "https://www.youtube.com/watch?v=2-LAMcpzODU", equipment: "Cable/Mancuernas" },
+      { name: "Extensión tríceps sobre cabeza", type: "Fuerza", sets: 3, reps: "12", rest: 45, isTime: false, description: "Overhead tricep extension", videoUrl: "https://www.youtube.com/watch?v=YbX7Wd8jQ-Q", equipment: "Mancuerna/Cable" }
     ]
   },
   viernes: {
@@ -88,15 +122,23 @@ const workoutProgram = {
     calories: "400-500",
     color: "from-indigo-500 to-purple-500",
     exercises: [
-      { name: "Estiramientos", type: "Calentamiento", sets: 1, reps: "5 min", rest: 0, isTime: true, duration: 300, description: "Calentamiento con estiramientos", videoUrl: "https://www.youtube.com/watch?v=BPYFXP-9hu4", equipment: "Ninguno" },
-      { name: "Carrera 1km constante", type: "Cardio", sets: 1, reps: "1 km", rest: 180, isTime: false, description: "Intenta bajo 6 min o 5 si te sientes cómodo. Controla la respiración: 2 inhalaciones por la nariz, 1 exhalación", videoUrl: "https://www.youtube.com/watch?v=0GZSfBuhf6Y", equipment: "Ninguno" },
-      { name: "Remo con barra T", type: "Fuerza", sets: 3, reps: "10", rest: 60, isTime: false, description: "Remo con barra en T para espalda media", videoUrl: "https://www.youtube.com/watch?v=j3Igk5nyZE4", equipment: "Barra T" },
-      { name: "Jalón lat", type: "Fuerza", sets: 4, reps: "10", rest: 60, isTime: false, description: "Jalón al pecho para dorsales", videoUrl: "https://www.youtube.com/watch?v=CAwf7n6Luuc", equipment: "Máquina de jalón" },
-      { name: "Remo péndulo", type: "Fuerza", sets: 3, reps: "10,8,8", rest: 60, isTime: false, description: "Remo con movimiento pendular", videoUrl: "https://www.youtube.com/watch?v=ML1L5vxrVAY", equipment: "Mancuernas" },
-      { name: "Extensión de dorsales", type: "Fuerza", sets: 3, reps: "10", rest: 60, isTime: false, description: "Pullover para dorsales", videoUrl: "https://www.youtube.com/watch?v=AV5PmZJIrrw", equipment: "Cable/Mancuerna" },
-      { name: "Face pulls", type: "Fuerza", sets: 3, reps: "10", rest: 45, isTime: false, description: "Jalones a la cara para deltoides posteriores", videoUrl: "https://www.youtube.com/watch?v=rep-qVOkqgk", equipment: "Cable con cuerda" },
-      { name: "Curl con cable", type: "Fuerza", sets: 4, reps: "10", rest: 45, isTime: false, description: "Curl de bíceps con cable", videoUrl: "https://www.youtube.com/watch?v=85kXYq7Ssh4", equipment: "Cable" },
-      { name: "Curl martillo", type: "Fuerza", sets: 3, reps: "10", rest: 45, isTime: false, description: "Curl tipo martillo para bíceps y antebrazos", videoUrl: "https://www.youtube.com/watch?v=zC3nLlEvin4", equipment: "Mancuernas" }
+      // CALENTAMIENTO
+      { name: "📋 CALENTAMIENTO", type: "Sección", sets: 1, reps: "", rest: 0, isTime: false, description: "Warm up", videoUrl: "", equipment: "Sección" },
+      { name: "Estiramientos", type: "Calentamiento", sets: 1, reps: "5 min", rest: 0, isTime: true, duration: 300, description: "Warm up stretch", videoUrl: "https://www.youtube.com/watch?v=BPYFXP-9hu4", equipment: "Ninguno" },
+      { name: "Carrera constante 1km", type: "Cardio", sets: 1, reps: "1 km", rest: 180, isTime: false, description: "Intenta bajo 6 min o 5 si te sientes cómodo", videoUrl: "https://www.youtube.com/watch?v=0GZSfBuhf6Y", equipment: "Ninguno" },
+      
+      // ESPALDA PRINCIPAL
+      { name: "📋 TRABAJO DE ESPALDA", type: "Sección", sets: 1, reps: "", rest: 0, isTime: false, description: "Ejercicios principales de espalda", videoUrl: "", equipment: "Sección" },
+      { name: "Remo con barra T", type: "Fuerza", sets: 3, reps: "10", rest: 60, isTime: false, description: "T bar row para espalda media", videoUrl: "https://www.youtube.com/watch?v=j3Igk5nyZE4", equipment: "Barra T" },
+      { name: "Jalón lat", type: "Fuerza", sets: 4, reps: "10", rest: 60, isTime: false, description: "Lat pull down al pecho", videoUrl: "https://www.youtube.com/watch?v=CAwf7n6Luuc", equipment: "Máquina de jalón" },
+      { name: "Remo péndulo", type: "Fuerza", sets: 1, reps: "10,8,8", rest: 60, isTime: false, description: "Pendulum rows", videoUrl: "https://www.youtube.com/watch?v=ML1L5vxrVAY", equipment: "Mancuernas" },
+      { name: "Extensión de dorsales", type: "Fuerza", sets: 3, reps: "10", rest: 60, isTime: false, description: "Lat extension/pullover", videoUrl: "https://www.youtube.com/watch?v=AV5PmZJIrrw", equipment: "Cable/Mancuerna" },
+      { name: "Face pulls", type: "Fuerza", sets: 3, reps: "10", rest: 45, isTime: false, description: "Face pulls para deltoides posteriores", videoUrl: "https://www.youtube.com/watch?v=rep-qVOkqgk", equipment: "Cable con cuerda" },
+      
+      // BÍCEPS
+      { name: "📋 TRABAJO DE BÍCEPS", type: "Sección", sets: 1, reps: "", rest: 0, isTime: false, description: "Ejercicios de bíceps", videoUrl: "", equipment: "Sección" },
+      { name: "Curl con cable", type: "Fuerza", sets: 4, reps: "10", rest: 45, isTime: false, description: "Cable curls", videoUrl: "https://www.youtube.com/watch?v=85kXYq7Ssh4", equipment: "Cable" },
+      { name: "Curl martillo", type: "Fuerza", sets: 3, reps: "10", rest: 45, isTime: false, description: "Hammer curls", videoUrl: "https://www.youtube.com/watch?v=zC3nLlEvin4", equipment: "Mancuernas" }
     ]
   },
   sabado: {
@@ -108,16 +150,27 @@ const workoutProgram = {
     calories: "500-600",
     color: "from-red-500 to-orange-500",
     exercises: [
-      { name: "Estiramientos", type: "Calentamiento", sets: 1, reps: "5 min", rest: 0, isTime: true, duration: 300, description: "Calentamiento con estiramientos dinámicos", videoUrl: "https://www.youtube.com/watch?v=JNAL3tfF2R4", equipment: "Ninguno" },
-      { name: "Opción cardio (elige una)", type: "Cardio", sets: 1, reps: "15 min", rest: 180, isTime: true, duration: 900, description: "15 min carrera, bicicleta o escaladora", videoUrl: "https://www.youtube.com/watch?v=g_tea8ZNk5A", equipment: "Variable" },
-      { name: "Sentadillas traseras", type: "Fuerza", sets: 3, reps: "10", rest: 90, isTime: false, description: "Sentadillas con barra en la espalda", videoUrl: "https://www.youtube.com/watch?v=ultWZbUMPL8", equipment: "Barra + Rack" },
-      { name: "Box step ups", type: "Fuerza", sets: 3, reps: "10 c/pierna", rest: 60, isTime: false, description: "Subidas al cajón alternando piernas", videoUrl: "https://www.youtube.com/watch?v=5aHSMnTwIRg", equipment: "Cajón" },
-      { name: "Sentadillas elevadas", type: "Fuerza", sets: 2, reps: "12", rest: 60, isTime: false, description: "Sentadillas con talones elevados", videoUrl: "https://www.youtube.com/watch?v=KB5YRpgWuRY", equipment: "Plataforma/Discos" },
-      { name: "Prensa de piernas", type: "Fuerza", sets: 4, reps: "10", rest: 60, isTime: false, description: "Press de piernas en máquina", videoUrl: "https://www.youtube.com/watch?v=IZxyjW7MPJQ", equipment: "Prensa" },
-      { name: "Extensión de cuádriceps", type: "Fuerza", sets: 3, reps: "12", rest: 45, isTime: false, description: "Extensiones en máquina", videoUrl: "https://www.youtube.com/watch?v=YyvSfVjQeL0", equipment: "Máquina de extensión" },
-      { name: "Curl de isquiotibiales", type: "Fuerza", sets: 3, reps: "12", rest: 45, isTime: false, description: "Curl de piernas acostado o sentado", videoUrl: "https://www.youtube.com/watch?v=F488uJAQgmw", equipment: "Máquina de curl" },
-      { name: "Elevación de gemelos", type: "Fuerza", sets: 4, reps: "12", rest: 30, isTime: false, description: "Elevaciones de pantorrillas", videoUrl: "https://www.youtube.com/watch?v=_M2Etme-tfU", equipment: "Máquina/Mancuernas" },
-      { name: "FINALIZADOR: Cable crunch", type: "Core", sets: 1, reps: "40", rest: 0, isTime: false, description: "Abdominales con cable para finalizar", videoUrl: "https://www.youtube.com/watch?v=2fbujeH3F0E", equipment: "Cable" }
+      // CALENTAMIENTO
+      { name: "📋 CALENTAMIENTO", type: "Sección", sets: 1, reps: "", rest: 0, isTime: false, description: "Warm up", videoUrl: "", equipment: "Sección" },
+      { name: "Estiramientos", type: "Calentamiento", sets: 1, reps: "5 min", rest: 0, isTime: true, duration: 300, description: "Warm up stretch", videoUrl: "https://www.youtube.com/watch?v=JNAL3tfF2R4", equipment: "Ninguno" },
+      
+      // OPCIÓN CARDIO
+      { name: "📋 CARDIO (ELIGE UNA OPCIÓN)", type: "Sección", sets: 1, reps: "", rest: 0, isTime: false, description: "Elige tu cardio preferido", videoUrl: "", equipment: "Sección" },
+      { name: "Opción: Carrera / Bicicleta / Escaladora", type: "Cardio", sets: 1, reps: "15 min", rest: 180, isTime: true, duration: 900, description: "15 min run, bike o stairmaster", videoUrl: "https://www.youtube.com/watch?v=g_tea8ZNk5A", equipment: "Variable" },
+      
+      // PIERNAS PRINCIPAL
+      { name: "📋 TRABAJO DE PIERNAS", type: "Sección", sets: 1, reps: "", rest: 0, isTime: false, description: "Now we hit legs", videoUrl: "", equipment: "Sección" },
+      { name: "Sentadillas traseras", type: "Fuerza", sets: 3, reps: "10", rest: 90, isTime: false, description: "Back squats", videoUrl: "https://www.youtube.com/watch?v=ultWZbUMPL8", equipment: "Barra + Rack" },
+      { name: "Box step ups", type: "Fuerza", sets: 3, reps: "10 c/pierna", rest: 60, isTime: false, description: "Each leg - subidas al cajón", videoUrl: "https://www.youtube.com/watch?v=5aHSMnTwIRg", equipment: "Cajón" },
+      { name: "Sentadillas elevadas", type: "Fuerza", sets: 2, reps: "12", rest: 60, isTime: false, description: "Elevated squats", videoUrl: "https://www.youtube.com/watch?v=KB5YRpgWuRY", equipment: "Plataforma/Discos" },
+      { name: "Prensa de piernas", type: "Fuerza", sets: 4, reps: "10", rest: 60, isTime: false, description: "Leg press", videoUrl: "https://www.youtube.com/watch?v=IZxyjW7MPJQ", equipment: "Prensa" },
+      { name: "Extensión de cuádriceps", type: "Fuerza", sets: 3, reps: "12", rest: 45, isTime: false, description: "Leg extension", videoUrl: "https://www.youtube.com/watch?v=YyvSfVjQeL0", equipment: "Máquina de extensión" },
+      { name: "Curl de isquiotibiales", type: "Fuerza", sets: 3, reps: "12", rest: 45, isTime: false, description: "Leg curls", videoUrl: "https://www.youtube.com/watch?v=F488uJAQgmw", equipment: "Máquina de curl" },
+      { name: "Elevación de gemelos", type: "Fuerza", sets: 4, reps: "12", rest: 30, isTime: false, description: "Calf raises", videoUrl: "https://www.youtube.com/watch?v=_M2Etme-tfU", equipment: "Máquina/Mancuernas" },
+      
+      // FINALIZADOR
+      { name: "📋 FINISHER", type: "Sección", sets: 1, reps: "", rest: 0, isTime: false, description: "Finalizador de core", videoUrl: "", equipment: "Sección" },
+      { name: "Cable crunch", type: "Core", sets: 1, reps: "40", rest: 0, isTime: false, description: "40 reps cable crunch", videoUrl: "https://www.youtube.com/watch?v=2fbujeH3F0E", equipment: "Cable" }
     ]
   },
   domingo: {
@@ -129,9 +182,10 @@ const workoutProgram = {
     calories: "100-150",
     color: "from-gray-500 to-gray-600",
     exercises: [
-      { name: "Estiramientos o foam roll", type: "Movilidad", sets: 1, reps: "10 min", rest: 0, isTime: true, duration: 600, description: "Los músculos crecen cuando descansas, la disciplina se agudiza cuando te mantienes intencional", videoUrl: "https://www.youtube.com/watch?v=t4A523-O5uk", equipment: "Foam roller opcional" },
-      { name: "Caminata", type: "Cardio", sets: 1, reps: "20-30 min", rest: 0, isTime: true, duration: 1500, description: "Caminata suave para recuperación activa", videoUrl: "https://www.youtube.com/watch?v=lJLrfKzKdpQ", equipment: "Ninguno" },
-      { name: "Hidratación agresiva", type: "Recuperación", sets: 1, reps: "Todo el día", rest: 0, isTime: false, description: "No confundas descanso con debilidad. Los leones descansan antes de cazar", videoUrl: "https://www.youtube.com/watch?v=cJVEhswfuxk", equipment: "Agua" }
+      { name: "📋 RECUPERACIÓN ACTIVA", type: "Sección", sets: 1, reps: "", rest: 0, isTime: false, description: "Recovery is part of the plan", videoUrl: "", equipment: "Sección" },
+      { name: "Estiramientos o foam roll", type: "Movilidad", sets: 1, reps: "10 min", rest: 0, isTime: true, duration: 600, description: "Stretch or foam roll", videoUrl: "https://www.youtube.com/watch?v=t4A523-O5uk", equipment: "Foam roller opcional" },
+      { name: "Caminata", type: "Cardio", sets: 1, reps: "20-30 min", rest: 0, isTime: true, duration: 1500, description: "20-30 mins walk", videoUrl: "https://www.youtube.com/watch?v=lJLrfKzKdpQ", equipment: "Ninguno" },
+      { name: "Hidratación agresiva", type: "Recuperación", sets: 1, reps: "Todo el día", rest: 0, isTime: false, description: "Hydrate aggressively - Don't confuse rest with weakness, Lions rest before they hunt", videoUrl: "https://www.youtube.com/watch?v=cJVEhswfuxk", equipment: "Agua" }
     ]
   }
 };
