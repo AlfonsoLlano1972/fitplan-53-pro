@@ -1,98 +1,140 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Play, Pause, RotateCcw, ChevronLeft, ChevronRight, Camera, Trash2, Plus, Trophy, Target, TrendingUp, Calendar, Clock, Dumbbell, Heart, Award, CheckCircle, Circle, AlertCircle, Volume2, VolumeX, Settings, User, BarChart3, Activity, Flame, Timer, SkipForward } from 'lucide-react';
 
-// Datos del programa de entrenamiento mejorados
+// Datos del programa de entrenamiento actualizado
 const workoutProgram = {
   lunes: {
-    name: "HIIT y Fuerza (Tren Superior)",
-    description: "Aumentar el metabolismo y fortalecer el tren superior",
-    type: "HIIT + Fuerza",
-    difficulty: "Intermedio",
-    duration: "45-50 min",
-    calories: "350-450",
-    color: "from-orange-500 to-red-500",
-    exercises: [
-      { name: "Calentamiento - Carrera", type: "Cardio", sets: 1, reps: "1 km", rest: 0, isTime: false, description: "Carrera suave para preparar el cuerpo y elevar la temperatura corporal.", video: "🎥", equipment: "Ninguno" },
-      { name: "Burpees (modificados sin salto)", type: "HIIT", sets: 3, reps: "30 seg", rest: 30, isTime: true, duration: 30, description: "Ejercicio completo que trabaja todo el cuerpo. Versión modificada sin salto para proteger articulaciones.", video: "🎥", equipment: "Ninguno" },
-      { name: "Mountain Climbers", type: "HIIT", sets: 3, reps: "30 seg", rest: 30, isTime: true, duration: 30, description: "Ejercicio cardiovascular que fortalece el core y mejora la resistencia.", video: "🎥", equipment: "Ninguno" },
-      { name: "Jumping Jacks", type: "HIIT", sets: 3, reps: "30 seg", rest: 30, isTime: true, duration: 30, description: "Ejercicio cardiovascular básico que activa todo el cuerpo.", video: "🎥", equipment: "Ninguno" },
-      { name: "Press de banca con mancuernas", type: "Fuerza", sets: 3, reps: "10-12", rest: 60, isTime: false, description: "Ejercicio fundamental para desarrollar el pecho, hombros y tríceps.", video: "🎥", equipment: "Mancuernas" },
-      { name: "Remo con mancuerna", type: "Fuerza", sets: 3, reps: "10-12", rest: 60, isTime: false, description: "Fortalece la espalda y mejora la postura. Excelente para contrarrestar el trabajo de pecho.", video: "🎥", equipment: "Mancuerna" },
-      { name: "Press militar con mancuernas", type: "Fuerza", sets: 3, reps: "10-12", rest: 60, isTime: false, description: "Desarrolla los hombros y mejora la estabilidad del core.", video: "🎥", equipment: "Mancuernas" },
-      { name: "Flexiones", type: "Fuerza", sets: 3, reps: "Al fallo", rest: 60, isTime: false, description: "Ejercicio clásico para pecho, hombros y tríceps usando el peso corporal.", video: "🎥", equipment: "Ninguno" }
-    ]
-  },
-  martes: {
-    name: "Cardio y Core",
-    description: "Mejorar la resistencia cardiovascular y fortalecer el core",
-    type: "Cardio + Core",
-    difficulty: "Fácil-Intermedio",
-    duration: "40-45 min",
-    calories: "300-400",
-    color: "from-green-500 to-teal-500",
-    exercises: [
-      { name: "Carrera suave", type: "Cardio", sets: 1, reps: "25 min", rest: 0, isTime: true, duration: 1500, description: "Carrera a ritmo conversacional para mejorar la resistencia aeróbica.", video: "🎥", equipment: "Ninguno" },
-      { name: "Plancha isométrica", type: "Core", sets: 3, reps: "30-60 seg", rest: 60, isTime: true, duration: 45, description: "Ejercicio isométrico que fortalece todo el core y mejora la estabilidad.", video: "🎥", equipment: "Ninguno" },
-      { name: "Elevaciones de piernas", type: "Core", sets: 3, reps: "15", rest: 45, isTime: false, description: "Trabaja la parte inferior del abdomen de forma efectiva.", video: "🎥", equipment: "Ninguno" },
-      { name: "Crunches", type: "Core", sets: 3, reps: "20", rest: 45, isTime: false, description: "Ejercicio clásico para fortalecer la parte superior del abdomen.", video: "🎥", equipment: "Ninguno" },
-      { name: "Russian Twists", type: "Core", sets: 3, reps: "20", rest: 45, isTime: false, description: "Fortalece los oblicuos y mejora la rotación del tronco.", video: "🎥", equipment: "Opcional: Peso" }
-    ]
-  },
-  miercoles: {
-    name: "HIIT y Fuerza (Tren Inferior)",
-    description: "Quemar grasa y fortalecer piernas y glúteos",
-    type: "HIIT + Fuerza",
+    name: "Tren Superior y Core",
+    description: "Calentamiento, HIIT y trabajo de fuerza",
+    type: "Fuerza + HIIT",
     difficulty: "Intermedio-Alto",
     duration: "45-50 min",
     calories: "400-500",
-    color: "from-purple-500 to-pink-500",
+    color: "from-orange-500 to-red-500",
     exercises: [
-      { name: "Calentamiento dinámico", type: "Calentamiento", sets: 1, reps: "5 min", rest: 0, isTime: true, duration: 300, description: "Movimientos dinámicos para preparar las articulaciones de la cadera y rodillas.", video: "🎥", equipment: "Ninguno" },
-      { name: "Squat Jumps", type: "HIIT", sets: 4, reps: "20 seg", rest: 40, isTime: true, duration: 20, description: "Ejercicio pliométrico que mejora la potencia de las piernas.", video: "🎥", equipment: "Ninguno" },
-      { name: "Zancadas alternas", type: "HIIT", sets: 4, reps: "20 seg", rest: 40, isTime: true, duration: 20, description: "Ejercicio unilateral que mejora el equilibrio y fortalece piernas.", video: "🎥", equipment: "Ninguno" },
-      { name: "High Knees", type: "HIIT", sets: 4, reps: "20 seg", rest: 40, isTime: true, duration: 20, description: "Ejercicio cardiovascular que mejora la coordinación y resistencia.", video: "🎥", equipment: "Ninguno" },
-      { name: "Sentadillas Goblet", type: "Fuerza", sets: 3, reps: "12-15", rest: 60, isTime: false, description: "Sentadilla con peso que fortalece cuádriceps, glúteos y core.", video: "🎥", equipment: "Pesa rusa/Mancuerna" },
-      { name: "Peso muerto rumano", type: "Fuerza", sets: 3, reps: "10-12", rest: 60, isTime: false, description: "Ejercicio fundamental para fortalecer glúteos e isquiotibiales.", video: "🎥", equipment: "Mancuernas/Barra" },
-      { name: "Zancadas con mancuernas", type: "Fuerza", sets: 3, reps: "10 c/pierna", rest: 60, isTime: false, description: "Fortalece piernas de forma unilateral, mejorando el equilibrio.", video: "🎥", equipment: "Mancuernas" },
-      { name: "Elevación de gemelos", type: "Fuerza", sets: 3, reps: "15-20", rest: 45, isTime: false, description: "Fortalece los músculos de la pantorrilla.", video: "🎥", equipment: "Opcional: Peso" }
+      { name: "Estiramientos de calentamiento", type: "Calentamiento", sets: 1, reps: "5 min", rest: 0, isTime: true, duration: 300, description: "Prepara tu cuerpo con estiramientos dinámicos", video: "🎥", equipment: "Ninguno" },
+      { name: "Carrera de calentamiento", type: "Cardio", sets: 1, reps: "1 km", rest: 0, isTime: false, description: "Carrera suave para elevar la temperatura corporal", video: "🎥", equipment: "Ninguno" },
+      { name: "Bicicleta de asalto", type: "HIIT", sets: 1, reps: "15 min", rest: 0, isTime: true, duration: 900, description: "12 calorías en bicicleta de asalto", video: "🎥", equipment: "Bicicleta de asalto" },
+      { name: "Clean & Press", type: "Fuerza", sets: 1, reps: "8", rest: 60, isTime: false, description: "Ejercicio compuesto para potencia total del cuerpo", video: "🎥", equipment: "Barra/Mancuernas" },
+      { name: "Flexiones", type: "Fuerza", sets: 1, reps: "10", rest: 60, isTime: false, description: "Ejercicio clásico para pecho y tríceps", video: "🎥", equipment: "Ninguno" },
+      { name: "Elevaciones de piernas colgado", type: "Core", sets: 3, reps: "10", rest: 60, isTime: false, description: "Fortalece el core inferior", video: "🎥", equipment: "Barra de dominadas" },
+      { name: "KB Swings", type: "HIIT", sets: 3, reps: "15", rest: 60, isTime: false, description: "Ejercicio explosivo con pesa rusa", video: "🎥", equipment: "Pesa rusa" },
+      { name: "Arnold Press", type: "Fuerza", sets: 3, reps: "10", rest: 60, isTime: false, description: "Press de hombros con rotación completa", video: "🎥", equipment: "Mancuernas" },
+      { name: "Rear Delt Fly", type: "Fuerza", sets: 3, reps: "10", rest: 60, isTime: false, description: "Aperturas posteriores para deltoides traseros", video: "🎥", equipment: "Mancuernas" },
+      { name: "Elevaciones laterales con cable", type: "Fuerza", sets: 3, reps: "10", rest: 60, isTime: false, description: "Trabajo aislado de deltoides laterales", video: "🎥", equipment: "Cable/Poleas" }
     ]
   },
-  jueves: {
-    name: "Cardio y Movilidad",
-    description: "Recuperación activa con trabajo cardiovascular suave",
-    type: "Cardio + Movilidad",
-    difficulty: "Fácil",
-    duration: "35-40 min",
-    calories: "200-300",
-    color: "from-blue-500 to-cyan-500",
-    exercises: [
-      { name: "Caminata rápida en cinta", type: "Cardio", sets: 1, reps: "30 min", rest: 0, isTime: true, duration: 1800, description: "Ejercicio cardiovascular de bajo impacto para la recuperación activa.", video: "🎥", equipment: "Cinta/Exterior" },
-      { name: "Rotaciones de cuello y hombros", type: "Movilidad", sets: 2, reps: "10 c/dirección", rest: 30, isTime: false, description: "Mejora la movilidad cervical y de hombros.", video: "🎥", equipment: "Ninguno" },
-      { name: "Gato-Camello", type: "Movilidad", sets: 2, reps: "10", rest: 30, isTime: false, description: "Ejercicio de movilidad para la columna vertebral.", video: "🎥", equipment: "Ninguno" },
-      { name: "Estiramiento de isquiotibiales", type: "Movilidad", sets: 2, reps: "30 seg c/pierna", rest: 30, isTime: true, duration: 30, description: "Mejora la flexibilidad de la parte posterior de las piernas.", video: "🎥", equipment: "Ninguno" },
-      { name: "Estiramiento de cuádriceps", type: "Movilidad", sets: 2, reps: "30 seg c/pierna", rest: 30, isTime: true, duration: 30, description: "Estira la parte frontal de los muslos.", video: "🎥", equipment: "Ninguno" }
-    ]
-  },
-  viernes: {
-    name: "Full Body",
-    description: "Entrenamiento completo de todo el cuerpo",
-    type: "Full Body",
+  martes: {
+    name: "Cardio y Brazos",
+    description: "Entrenamiento cardiovascular con finalizador de brazos",
+    type: "Cardio + Fuerza",
     difficulty: "Intermedio",
     duration: "40-45 min",
     calories: "350-450",
+    color: "from-green-500 to-teal-500",
+    exercises: [
+      { name: "Estiramientos de calentamiento", type: "Calentamiento", sets: 1, reps: "5 min", rest: 0, isTime: true, duration: 300, description: "Prepara tu cuerpo con estiramientos dinámicos", video: "🎥", equipment: "Ninguno" },
+      { name: "Carrera 1 milla", type: "Cardio", sets: 1, reps: "1.6 km", rest: 0, isTime: false, description: "Carrera a ritmo moderado", video: "🎥", equipment: "Ninguno" },
+      { name: "Ski Erg", type: "Cardio", sets: 1, reps: "500m", rest: 120, isTime: false, description: "Si no puedes hacer todo junto, divide en 2x250m", video: "🎥", equipment: "Ski Erg" },
+      { name: "Remo", type: "Cardio", sets: 1, reps: "500m", rest: 120, isTime: false, description: "Mantén un ritmo constante", video: "🎥", equipment: "Máquina de remo" },
+      { name: "Box Step Ups", type: "Fuerza", sets: 1, reps: "50", rest: 60, isTime: false, description: "Subidas al cajón alternando piernas", video: "🎥", equipment: "Cajón/Step" },
+      { name: "Elevaciones de rodillas", type: "Core", sets: 1, reps: "50", rest: 60, isTime: false, description: "Eleva las rodillas al pecho alternadamente", video: "🎥", equipment: "Ninguno" },
+      { name: "Hang Cleans", type: "Fuerza", sets: 1, reps: "30", rest: 90, isTime: false, description: "Cargadas colgantes explosivas", video: "🎥", equipment: "Barra" },
+      { name: "FINALIZADOR: Curl con barra", type: "Fuerza", sets: 1, reps: "30", rest: 60, isTime: false, description: "Finalizador para bíceps", video: "🎥", equipment: "Barra" },
+      { name: "FINALIZADOR: Extensiones de tríceps", type: "Fuerza", sets: 1, reps: "30", rest: 0, isTime: false, description: "Finalizador para tríceps", video: "🎥", equipment: "Mancuernas/Cable" }
+    ]
+  },
+  miercoles: {
+    name: "Pecho y Hombros",
+    description: "Entrenamiento de fuerza para tren superior",
+    type: "Fuerza",
+    difficulty: "Intermedio-Alto",
+    duration: "50-55 min",
+    calories: "400-500",
+    color: "from-purple-500 to-pink-500",
+    exercises: [
+      { name: "Estiramientos", type: "Calentamiento", sets: 1, reps: "5 min", rest: 0, isTime: true, duration: 300, description: "Calentamiento con estiramientos", video: "🎥", equipment: "Ninguno" },
+      { name: "Carrera 2km", type: "Cardio", sets: 1, reps: "2 km", rest: 180, isTime: false, description: "Intenta mantenerlo bajo 10 minutos. Ritmo conversacional", video: "🎥", equipment: "Ninguno" },
+      { name: "Bicicleta de asalto + Press de banca", type: "HIIT", sets: 5, reps: "16-14-12-10-8", rest: 90, isTime: false, description: "16 calorías y 16 reps, 14 cal y 14 reps, etc. Press más ligero de lo normal", video: "🎥", equipment: "Bicicleta + Banca" },
+      { name: "Press militar", type: "Fuerza", sets: 5, reps: "10", rest: 60, isTime: false, description: "Press de hombros estricto", video: "🎥", equipment: "Barra/Mancuernas" },
+      { name: "Remo gorila", type: "Fuerza", sets: 5, reps: "10", rest: 60, isTime: false, description: "Remo alternado con mancuernas", video: "🎥", equipment: "Mancuernas" }
+    ]
+  },
+  jueves: {
+    name: "Día de Pecho y Tríceps",
+    description: "Enfoque en pecho con trabajo de tríceps",
+    type: "Fuerza",
+    difficulty: "Alto",
+    duration: "55-60 min",
+    calories: "450-550",
+    color: "from-blue-500 to-cyan-500",
+    exercises: [
+      { name: "Calentamiento en bicicleta", type: "Calentamiento", sets: 1, reps: "15 min", rest: 0, isTime: true, duration: 900, description: "Calentamiento cardiovascular suave", video: "🎥", equipment: "Bicicleta" },
+      { name: "Press declinado con mancuernas", type: "Fuerza", sets: 3, reps: "10", rest: 60, isTime: false, description: "De ligero a pesado, enfócate en la forma", video: "🎥", equipment: "Mancuernas + Banco" },
+      { name: "Aperturas declinadas", type: "Fuerza", sets: 3, reps: "12,10,8", rest: 60, isTime: false, description: "Series descendentes", video: "🎥", equipment: "Mancuernas + Banco" },
+      { name: "Press inclinado con mancuernas", type: "Fuerza", sets: 3, reps: "12,10,8", rest: 60, isTime: false, description: "De ligero a pesado progresivamente", video: "🎥", equipment: "Mancuernas + Banco" },
+      { name: "Fondos", type: "Fuerza", sets: 3, reps: "10,8,6", rest: 90, isTime: false, description: "Asistidos o sin asistencia. Baja profundo para estirar el pecho", video: "🎥", equipment: "Paralelas" },
+      { name: "Press de pecho", type: "Fuerza", sets: 3, reps: "10", rest: 60, isTime: false, description: "Press de pecho en máquina o con mancuernas", video: "🎥", equipment: "Máquina/Mancuernas" },
+      { name: "Extensión de tríceps", type: "Fuerza", sets: 3, reps: "10", rest: 45, isTime: false, description: "Extensiones con cable o mancuernas", video: "🎥", equipment: "Cable/Mancuernas" },
+      { name: "Extensión de tríceps sobre cabeza", type: "Fuerza", sets: 3, reps: "12", rest: 45, isTime: false, description: "Extensiones sobre la cabeza para tríceps", video: "🎥", equipment: "Mancuerna/Cable" }
+    ]
+  },
+  viernes: {
+    name: "Espalda y Bíceps",
+    description: "Día de tirón enfocado en espalda",
+    type: "Fuerza",
+    difficulty: "Intermedio-Alto",
+    duration: "50-55 min",
+    calories: "400-500",
     color: "from-indigo-500 to-purple-500",
     exercises: [
-      { name: "Calentamiento general", type: "Calentamiento", sets: 1, reps: "5 min", rest: 0, isTime: true, duration: 300, description: "Preparación general del cuerpo para el entrenamiento.", video: "🎥", equipment: "Ninguno" },
-      { name: "Sentadillas", type: "Fuerza", sets: 3, reps: "12-15", rest: 60, isTime: false, description: "Ejercicio fundamental para el tren inferior.", video: "🎥", equipment: "Opcional: Peso" },
-      { name: "Flexiones", type: "Fuerza", sets: 3, reps: "8-12", rest: 60, isTime: false, description: "Ejercicio básico para el tren superior.", video: "🎥", equipment: "Ninguno" },
-      { name: "Zancadas", type: "Fuerza", sets: 3, reps: "10 c/pierna", rest: 60, isTime: false, description: "Fortalece piernas y mejora el equilibrio.", video: "🎥", equipment: "Opcional: Peso" },
-      { name: "Plancha", type: "Core", sets: 3, reps: "30-45 seg", rest: 60, isTime: true, duration: 45, description: "Fortalece el core y mejora la estabilidad.", video: "🎥", equipment: "Ninguno" },
-      { name: "Remo con banda elástica", type: "Fuerza", sets: 3, reps: "12-15", rest: 60, isTime: false, description: "Fortalece la espalda usando resistencia elástica.", video: "🎥", equipment: "Banda elástica" },
-      { name: "Elevación de talones", type: "Fuerza", sets: 3, reps: "15-20", rest: 45, isTime: false, description: "Fortalece los músculos de la pantorrilla.", video: "🎥", equipment: "Opcional: Peso" }
+      { name: "Estiramientos", type: "Calentamiento", sets: 1, reps: "5 min", rest: 0, isTime: true, duration: 300, description: "Calentamiento con estiramientos", video: "🎥", equipment: "Ninguno" },
+      { name: "Carrera 1km constante", type: "Cardio", sets: 1, reps: "1 km", rest: 180, isTime: false, description: "Intenta bajo 6 min o 5 si te sientes cómodo. Controla la respiración: 2 inhalaciones por la nariz, 1 exhalación", video: "🎥", equipment: "Ninguno" },
+      { name: "Remo con barra T", type: "Fuerza", sets: 3, reps: "10", rest: 60, isTime: false, description: "Remo con barra en T para espalda media", video: "🎥", equipment: "Barra T" },
+      { name: "Jalón lat", type: "Fuerza", sets: 4, reps: "10", rest: 60, isTime: false, description: "Jalón al pecho para dorsales", video: "🎥", equipment: "Máquina de jalón" },
+      { name: "Remo péndulo", type: "Fuerza", sets: 3, reps: "10,8,8", rest: 60, isTime: false, description: "Remo con movimiento pendular", video: "🎥", equipment: "Mancuernas" },
+      { name: "Extensión de dorsales", type: "Fuerza", sets: 3, reps: "10", rest: 60, isTime: false, description: "Pullover para dorsales", video: "🎥", equipment: "Cable/Mancuerna" },
+      { name: "Face pulls", type: "Fuerza", sets: 3, reps: "10", rest: 45, isTime: false, description: "Jalones a la cara para deltoides posteriores", video: "🎥", equipment: "Cable con cuerda" },
+      { name: "Curl con cable", type: "Fuerza", sets: 4, reps: "10", rest: 45, isTime: false, description: "Curl de bíceps con cable", video: "🎥", equipment: "Cable" },
+      { name: "Curl martillo", type: "Fuerza", sets: 3, reps: "10", rest: 45, isTime: false, description: "Curl tipo martillo para bíceps y antebrazos", video: "🎥", equipment: "Mancuernas" }
+    ]
+  },
+  sabado: {
+    name: "Día de Piernas",
+    description: "Entrenamiento completo de tren inferior",
+    type: "Fuerza",
+    difficulty: "Alto",
+    duration: "55-60 min",
+    calories: "500-600",
+    color: "from-red-500 to-orange-500",
+    exercises: [
+      { name: "Estiramientos", type: "Calentamiento", sets: 1, reps: "5 min", rest: 0, isTime: true, duration: 300, description: "Calentamiento con estiramientos dinámicos", video: "🎥", equipment: "Ninguno" },
+      { name: "Opción cardio (elige una)", type: "Cardio", sets: 1, reps: "15 min", rest: 180, isTime: true, duration: 900, description: "15 min carrera, bicicleta o escaladora", video: "🎥", equipment: "Variable" },
+      { name: "Sentadillas traseras", type: "Fuerza", sets: 3, reps: "10", rest: 90, isTime: false, description: "Sentadillas con barra en la espalda", video: "🎥", equipment: "Barra + Rack" },
+      { name: "Box step ups", type: "Fuerza", sets: 3, reps: "10 c/pierna", rest: 60, isTime: false, description: "Subidas al cajón alternando piernas", video: "🎥", equipment: "Cajón" },
+      { name: "Sentadillas elevadas", type: "Fuerza", sets: 2, reps: "12", rest: 60, isTime: false, description: "Sentadillas con talones elevados", video: "🎥", equipment: "Plataforma/Discos" },
+      { name: "Prensa de piernas", type: "Fuerza", sets: 4, reps: "10", rest: 60, isTime: false, description: "Press de piernas en máquina", video: "🎥", equipment: "Prensa" },
+      { name: "Extensión de cuádriceps", type: "Fuerza", sets: 3, reps: "12", rest: 45, isTime: false, description: "Extensiones en máquina", video: "🎥", equipment: "Máquina de extensión" },
+      { name: "Curl de isquiotibiales", type: "Fuerza", sets: 3, reps: "12", rest: 45, isTime: false, description: "Curl de piernas acostado o sentado", video: "🎥", equipment: "Máquina de curl" },
+      { name: "Elevación de gemelos", type: "Fuerza", sets: 4, reps: "12", rest: 30, isTime: false, description: "Elevaciones de pantorrillas", video: "🎥", equipment: "Máquina/Mancuernas" },
+      { name: "FINALIZADOR: Cable crunch", type: "Core", sets: 1, reps: "40", rest: 0, isTime: false, description: "Abdominales con cable para finalizar", video: "🎥", equipment: "Cable" }
+    ]
+  },
+  domingo: {
+    name: "Día de Recuperación",
+    description: "Recuperación activa - El descanso es parte del plan",
+    type: "Recuperación",
+    difficulty: "Fácil",
+    duration: "20-30 min",
+    calories: "100-150",
+    color: "from-gray-500 to-gray-600",
+    exercises: [
+      { name: "Estiramientos o foam roll", type: "Movilidad", sets: 1, reps: "10 min", rest: 0, isTime: true, duration: 600, description: "Los músculos crecen cuando descansas, la disciplina se agudiza cuando te mantienes intencional", video: "🎥", equipment: "Foam roller opcional" },
+      { name: "Caminata", type: "Cardio", sets: 1, reps: "20-30 min", rest: 0, isTime: true, duration: 1500, description: "Caminata suave para recuperación activa", video: "🎥", equipment: "Ninguno" },
+      { name: "Hidratación agresiva", type: "Recuperación", sets: 1, reps: "Todo el día", rest: 0, isTime: false, description: "No confundas descanso con debilidad. Los leones descansan antes de cazar", video: "💧", equipment: "Agua" }
     ]
   }
-};
-
+};    
 // Función para crear sonido usando Web Audio API
 const createBeepSound = () => {
   let audioContext = null;
