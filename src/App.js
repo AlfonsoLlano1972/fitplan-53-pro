@@ -1,1303 +1,454 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, RotateCcw, ChevronLeft, ChevronRight, Camera, Trash2, Plus, Trophy, Target, TrendingUp, Calendar, Clock, Dumbbell, Heart, Award, CheckCircle, Circle, AlertCircle, Volume2, VolumeX, Settings, User, BarChart3, Activity, Flame, Timer, SkipForward, Youtube } from 'lucide-react';
-// Datos del programa de entrenamiento con secciones organizadas y videos
+    import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Switch, SafeAreaView, StatusBar } from 'react-native';
+
+// Navegaci��n
+import { NavigationContainer } from '@react-navigation/native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import Ionicons from '@expo/vector-icons/Ionicons';
+
+// Audio
+import { Audio } from 'expo-av';
+
+// ===================================================================================
+// DATOS DE LA APLICACI��N (Normalmente ir��an en archivos separados)
+// ===================================================================================
+
 const workoutProgram = {
-  lunes: {
-    name: "HIIT y Fuerza (Tren Superior)",
-    description: "Calentamiento, HIIT y trabajo de fuerza",
-    type: "Fuerza + HIIT",
-    difficulty: "Intermedio-Alto",
-    duration: "45-50 min",
-    calories: "400-500",
-    color: "from-orange-500 to-red-500",
-    exercises: [
-      // SECCIÓN 1: CALENTAMIENTO
-      { name: "📋 CALENTAMIENTO", type: "Sección", sets: 1, reps: "", rest: 0, isTime: false, description: "Prepara tu cuerpo para el entrenamiento", videoUrl: "", equipment: "Sección" },
-      { name: "Estiramientos dinámicos", type: "Calentamiento", sets: 1, reps: "5 min", rest: 0, isTime: true, duration: 300, description: "Estiramientos para preparar el cuerpo", videoUrl: "https://www.youtube.com/watch?v=TSIbR5WVZhA", equipment: "Ninguno" },
-      { name: "Carrera de calentamiento", type: "Cardio", sets: 1, reps: "1 km", rest: 0, isTime: false, description: "Carrera suave para elevar la temperatura corporal", videoUrl: "https://www.youtube.com/watch?v=kVnyY17VS9Y", equipment: "Ninguno" },
-      
-      // SECCIÓN 2: 15 MINUTOS HIIT
-      { name: "📋 15 MINUTOS", type: "Sección", sets: 1, reps: "", rest: 0, isTime: false, description: "Circuito de alta intensidad", videoUrl: "", equipment: "Sección" },
-      { name: "Bicicleta de asalto", type: "HIIT", sets: 1, reps: "12 cal", rest: 0, isTime: false, description: "12 calorías en bicicleta de asalto", videoUrl: "https://www.youtube.com/watch?v=xxFZsIccyxQ", equipment: "Bicicleta de asalto" },
-      { name: "Clean & Press", type: "Fuerza", sets: 1, reps: "8", rest: 0, isTime: false, description: "Ejercicio compuesto para potencia total", videoUrl: "https://www.youtube.com/watch?v=KwYJTpQ_x5A", equipment: "Barra/Mancuernas" },
-      { name: "Flexiones", type: "Fuerza", sets: 1, reps: "10", rest: 120, isTime: false, description: "Press ups - ejercicio clásico para pecho", videoUrl: "https://www.youtube.com/watch?v=IODxDxX7oi4", equipment: "Ninguno" },
-      
-      // SECCIÓN 3: 3 RONDAS CORE
-      { name: "📋 3 RONDAS", type: "Sección", sets: 1, reps: "", rest: 0, isTime: false, description: "Circuito de core y potencia", videoUrl: "", equipment: "Sección" },
-      { name: "Elevaciones de piernas colgado", type: "Core", sets: 3, reps: "10", rest: 0, isTime: false, description: "Hanging leg raises para core inferior", videoUrl: "https://www.youtube.com/watch?v=Pr1ieGZ5atI", equipment: "Barra de dominadas" },
-      { name: "KB Swings", type: "HIIT", sets: 3, reps: "15", rest: 60, isTime: false, description: "Swings con pesa rusa explosivos", videoUrl: "https://www.youtube.com/watch?v=YSxHifyI6s8", equipment: "Pesa rusa" },
-      
-      // SECCIÓN 4: 3 RONDAS HOMBROS
-      { name: "📋 3 RONDAS", type: "Sección", sets: 1, reps: "", rest: 0, isTime: false, description: "Trabajo específico de hombros", videoUrl: "", equipment: "Sección" },
-      { name: "Arnold Press", type: "Fuerza", sets: 3, reps: "10", rest: 60, isTime: false, description: "Press de hombros con rotación", videoUrl: "https://www.youtube.com/watch?v=3ml7BH7mNwQ", equipment: "Mancuernas" },
-      { name: "Rear Delt Fly", type: "Fuerza", sets: 3, reps: "10", rest: 60, isTime: false, description: "Aperturas posteriores para deltoides", videoUrl: "https://www.youtube.com/watch?v=EA7u4Q_8HQ0", equipment: "Mancuernas" },
-      { name: "Elevaciones laterales con cable", type: "Fuerza", sets: 3, reps: "10", rest: 60, isTime: false, description: "Cable side raises para deltoides laterales", videoUrl: "https://www.youtube.com/watch?v=PPrzBWZDOhA", equipment: "Cable/Poleas" }
-    ]
-  },
-  martes: {
-    name: "Cardio y Brazos",
-    description: "Entrenamiento cardiovascular con finalizador de brazos",
-    type: "Cardio + Fuerza",
-    difficulty: "Intermedio",
-    duration: "40-45 min",
-    calories: "350-450",
-    color: "from-green-500 to-teal-500",
-    exercises: [
-      // CALENTAMIENTO
-      { name: "📋 CALENTAMIENTO", type: "Sección", sets: 1, reps: "", rest: 0, isTime: false, description: "Preparación para el entrenamiento", videoUrl: "", equipment: "Sección" },
-      { name: "Estiramientos", type: "Calentamiento", sets: 1, reps: "5 min", rest: 0, isTime: true, duration: 300, description: "Warm up stretches", videoUrl: "https://www.youtube.com/watch?v=XCGupgIHmtc", equipment: "Ninguno" },
-      { name: "Carrera 1 milla", type: "Cardio", sets: 1, reps: "1.6 km", rest: 180, isTime: false, description: "0.62km - Carrera a ritmo moderado", videoUrl: "https://www.youtube.com/watch?v=zy41a_RtzNo", equipment: "Ninguno" },
-      
-      // CIRCUITO PRINCIPAL
-      { name: "📋 CIRCUITO CARDIO", type: "Sección", sets: 1, reps: "", rest: 0, isTime: false, description: "Trabajo cardiovascular principal", videoUrl: "", equipment: "Sección" },
-      { name: "Ski Erg", type: "Cardio", sets: 1, reps: "500m", rest: 0, isTime: false, description: "Si no puedes hacer todo, divide en 2x250m", videoUrl: "https://www.youtube.com/watch?v=1hPxGlmWR4c", equipment: "Ski Erg" },
-      { name: "Remo", type: "Cardio", sets: 1, reps: "500m", rest: 0, isTime: false, description: "Mantén un ritmo constante", videoUrl: "https://www.youtube.com/watch?v=wAIMrW8hHuI", equipment: "Máquina de remo" },
-      { name: "Box Step Ups", type: "Fuerza", sets: 1, reps: "50", rest: 0, isTime: false, description: "Subidas al cajón alternando piernas", videoUrl: "https://www.youtube.com/watch?v=dQqApCGd5Ss", equipment: "Cajón/Step" },
-      { name: "Elevaciones de rodillas", type: "Core", sets: 1, reps: "50", rest: 0, isTime: false, description: "Knee raises alternados", videoUrl: "https://www.youtube.com/watch?v=2DOkNW1hEpg", equipment: "Ninguno" },
-      { name: "Hang Cleans", type: "Fuerza", sets: 1, reps: "30", rest: 180, isTime: false, description: "Cargadas colgantes explosivas", videoUrl: "https://www.youtube.com/watch?v=0aP3tDPZQcE", equipment: "Barra" },
-      
-      // FINALIZADOR
-      { name: "📋 FINALIZADOR", type: "Sección", sets: 1, reps: "", rest: 0, isTime: false, description: "Finisher de brazos", videoUrl: "", equipment: "Sección" },
-      { name: "Curl con barra", type: "Fuerza", sets: 1, reps: "30", rest: 60, isTime: false, description: "Barbell curls para bíceps", videoUrl: "https://www.youtube.com/watch?v=kwG2ipFRgfo", equipment: "Barra" },
-      { name: "Extensiones de tríceps", type: "Fuerza", sets: 1, reps: "30", rest: 0, isTime: false, description: "Tricep extensions finalizador", videoUrl: "https://www.youtube.com/watch?v=popGXI-qs98", equipment: "Mancuernas/Cable" }
-    ]
-  },
-  miercoles: {
-    name: "Pecho y Hombros",
-    description: "Entrenamiento de fuerza para tren superior",
-    type: "Fuerza",
-    difficulty: "Intermedio-Alto",
-    duration: "50-55 min",
-    calories: "400-500",
-    color: "from-purple-500 to-pink-500",
-    exercises: [
-      // CALENTAMIENTO
-      { name: "📋 CALENTAMIENTO", type: "Sección", sets: 1, reps: "", rest: 0, isTime: false, description: "Preparación", videoUrl: "", equipment: "Sección" },
-      { name: "Estiramientos", type: "Calentamiento", sets: 1, reps: "5 min", rest: 0, isTime: true, duration: 300, description: "Warm up stretches", videoUrl: "https://www.youtube.com/watch?v=_9UqzPMYkJc", equipment: "Ninguno" },
-      { name: "Carrera 2km", type: "Cardio", sets: 1, reps: "2 km", rest: 180, isTime: false, description: "Intenta mantenerlo bajo 10 minutos", videoUrl: "https://www.youtube.com/watch?v=xjdNkXM-MaQ", equipment: "Ninguno" },
-      
-      // CIRCUITO PRINCIPAL
-      { name: "📋 16-14-12-10-8", type: "Sección", sets: 1, reps: "", rest: 0, isTime: false, description: "Pirámide descendente", videoUrl: "", equipment: "Sección" },
-      { name: "Bicicleta de asalto + Press de banca", type: "HIIT", sets: 5, reps: "16-14-12-10-8", rest: 90, isTime: false, description: "16 cal y 16 reps, luego 14 y 14, etc. Press más ligero de lo normal", videoUrl: "https://www.youtube.com/watch?v=8bbE64NuDTU", equipment: "Bicicleta + Banca" },
-      
-      // 5 RONDAS
-      { name: "📋 5 RONDAS", type: "Sección", sets: 1, reps: "", rest: 0, isTime: false, description: "Circuito de fuerza", videoUrl: "", equipment: "Sección" },
-      { name: "Press militar", type: "Fuerza", sets: 5, reps: "10", rest: 0, isTime: false, description: "Military press estricto", videoUrl: "https://www.youtube.com/watch?v=2yjwXTZQDDI", equipment: "Barra/Mancuernas" },
-      { name: "Remo gorila", type: "Fuerza", sets: 5, reps: "10", rest: 60, isTime: false, description: "Gorilla rows alternados", videoUrl: "https://www.youtube.com/watch?v=a8vaVbT_lX0", equipment: "Mancuernas" }
-    ]
-  },
-  jueves: {
-    name: "Día de Pecho y Tríceps",
-    description: "Enfoque en pecho con trabajo de tríceps",
-    type: "Fuerza",
-    difficulty: "Alto",
-    duration: "55-60 min",
-    calories: "450-550",
-    color: "from-blue-500 to-cyan-500",
-    exercises: [
-      // CALENTAMIENTO
-      { name: "📋 CALENTAMIENTO", type: "Sección", sets: 1, reps: "", rest: 0, isTime: false, description: "Warm up", videoUrl: "", equipment: "Sección" },
-      { name: "Bicicleta 15 minutos", type: "Calentamiento", sets: 1, reps: "15 min", rest: 180, isTime: true, duration: 900, description: "Warm up bike", videoUrl: "https://www.youtube.com/watch?v=32UMvAVwoiU", equipment: "Bicicleta" },
-      
-      // PECHO PRINCIPAL
-      { name: "📋 TRABAJO DE PECHO", type: "Sección", sets: 1, reps: "", rest: 0, isTime: false, description: "Ejercicios principales de pecho", videoUrl: "", equipment: "Sección" },
-      { name: "Press declinado DB", type: "Fuerza", sets: 3, reps: "10", rest: 60, isTime: false, description: "De ligero a pesado, enfócate en la forma", videoUrl: "https://www.youtube.com/watch?v=OR6WM5Z2Hqs", equipment: "Mancuernas + Banco" },
-      { name: "Aperturas declinadas", type: "Fuerza", sets: 1, reps: "12,10,8", rest: 60, isTime: false, description: "Decline flys - series descendentes", videoUrl: "https://www.youtube.com/watch?v=O5JH3PNxzcs", equipment: "Mancuernas + Banco" },
-      { name: "Press inclinado DB", type: "Fuerza", sets: 1, reps: "12,10,8", rest: 60, isTime: false, description: "Incline DB press - de ligero a pesado", videoUrl: "https://www.youtube.com/watch?v=8iPEnn-ltC8", equipment: "Mancuernas + Banco" },
-      { name: "Fondos", type: "Fuerza", sets: 1, reps: "10,8,6", rest: 90, isTime: false, description: "Dips - asistidos o sin asistencia, baja profundo", videoUrl: "https://www.youtube.com/watch?v=2z8JmcrW-As", equipment: "Paralelas" },
-      { name: "Press de pecho", type: "Fuerza", sets: 3, reps: "10", rest: 60, isTime: false, description: "Chest press en máquina o mancuernas", videoUrl: "https://www.youtube.com/watch?v=xUm0BiZCWlQ", equipment: "Máquina/Mancuernas" },
-      
-      // TRÍCEPS
-      { name: "📋 TRABAJO DE TRÍCEPS", type: "Sección", sets: 1, reps: "", rest: 0, isTime: false, description: "Ejercicios de tríceps", videoUrl: "", equipment: "Sección" },
-      { name: "Extensión de tríceps", type: "Fuerza", sets: 3, reps: "10", rest: 45, isTime: false, description: "Tricep extension con cable", videoUrl: "https://www.youtube.com/watch?v=2-LAMcpzODU", equipment: "Cable/Mancuernas" },
-      { name: "Extensión tríceps sobre cabeza", type: "Fuerza", sets: 3, reps: "12", rest: 45, isTime: false, description: "Overhead tricep extension", videoUrl: "https://www.youtube.com/watch?v=YbX7Wd8jQ-Q", equipment: "Mancuerna/Cable" }
-    ]
-  },
-  viernes: {
-    name: "Espalda y Bíceps",
-    description: "Día de tirón enfocado en espalda",
-    type: "Fuerza",
-    difficulty: "Intermedio-Alto",
-    duration: "50-55 min",
-    calories: "400-500",
-    color: "from-indigo-500 to-purple-500",
-    exercises: [
-      // CALENTAMIENTO
-      { name: "📋 CALENTAMIENTO", type: "Sección", sets: 1, reps: "", rest: 0, isTime: false, description: "Warm up", videoUrl: "", equipment: "Sección" },
-      { name: "Estiramientos", type: "Calentamiento", sets: 1, reps: "5 min", rest: 0, isTime: true, duration: 300, description: "Warm up stretch", videoUrl: "https://www.youtube.com/watch?v=BPYFXP-9hu4", equipment: "Ninguno" },
-      { name: "Carrera constante 1km", type: "Cardio", sets: 1, reps: "1 km", rest: 180, isTime: false, description: "Intenta bajo 6 min o 5 si te sientes cómodo", videoUrl: "https://www.youtube.com/watch?v=0GZSfBuhf6Y", equipment: "Ninguno" },
-      
-      // ESPALDA PRINCIPAL
-      { name: "📋 TRABAJO DE ESPALDA", type: "Sección", sets: 1, reps: "", rest: 0, isTime: false, description: "Ejercicios principales de espalda", videoUrl: "", equipment: "Sección" },
-      { name: "Remo con barra T", type: "Fuerza", sets: 3, reps: "10", rest: 60, isTime: false, description: "T bar row para espalda media", videoUrl: "https://www.youtube.com/watch?v=j3Igk5nyZE4", equipment: "Barra T" },
-      { name: "Jalón lat", type: "Fuerza", sets: 4, reps: "10", rest: 60, isTime: false, description: "Lat pull down al pecho", videoUrl: "https://www.youtube.com/watch?v=CAwf7n6Luuc", equipment: "Máquina de jalón" },
-      { name: "Remo péndulo", type: "Fuerza", sets: 1, reps: "10,8,8", rest: 60, isTime: false, description: "Pendulum rows", videoUrl: "https://www.youtube.com/watch?v=ML1L5vxrVAY", equipment: "Mancuernas" },
-      { name: "Extensión de dorsales", type: "Fuerza", sets: 3, reps: "10", rest: 60, isTime: false, description: "Lat extension/pullover", videoUrl: "https://www.youtube.com/watch?v=AV5PmZJIrrw", equipment: "Cable/Mancuerna" },
-      { name: "Face pulls", type: "Fuerza", sets: 3, reps: "10", rest: 45, isTime: false, description: "Face pulls para deltoides posteriores", videoUrl: "https://www.youtube.com/watch?v=rep-qVOkqgk", equipment: "Cable con cuerda" },
-      
-      // BÍCEPS
-      { name: "📋 TRABAJO DE BÍCEPS", type: "Sección", sets: 1, reps: "", rest: 0, isTime: false, description: "Ejercicios de bíceps", videoUrl: "", equipment: "Sección" },
-      { name: "Curl con cable", type: "Fuerza", sets: 4, reps: "10", rest: 45, isTime: false, description: "Cable curls", videoUrl: "https://www.youtube.com/watch?v=85kXYq7Ssh4", equipment: "Cable" },
-      { name: "Curl martillo", type: "Fuerza", sets: 3, reps: "10", rest: 45, isTime: false, description: "Hammer curls", videoUrl: "https://www.youtube.com/watch?v=zC3nLlEvin4", equipment: "Mancuernas" }
-    ]
-  },
-  sabado: {
-    name: "Día de Piernas",
-    description: "Entrenamiento completo de tren inferior",
-    type: "Fuerza",
-    difficulty: "Alto",
-    duration: "55-60 min",
-    calories: "500-600",
-    color: "from-red-500 to-orange-500",
-    exercises: [
-      // CALENTAMIENTO
-      { name: "📋 CALENTAMIENTO", type: "Sección", sets: 1, reps: "", rest: 0, isTime: false, description: "Warm up", videoUrl: "", equipment: "Sección" },
-      { name: "Estiramientos", type: "Calentamiento", sets: 1, reps: "5 min", rest: 0, isTime: true, duration: 300, description: "Warm up stretch", videoUrl: "https://www.youtube.com/watch?v=JNAL3tfF2R4", equipment: "Ninguno" },
-      
-      // OPCIÓN CARDIO
-      { name: "📋 CARDIO (ELIGE UNA OPCIÓN)", type: "Sección", sets: 1, reps: "", rest: 0, isTime: false, description: "Elige tu cardio preferido", videoUrl: "", equipment: "Sección" },
-      { name: "Opción: Carrera / Bicicleta / Escaladora", type: "Cardio", sets: 1, reps: "15 min", rest: 180, isTime: true, duration: 900, description: "15 min run, bike o stairmaster", videoUrl: "https://www.youtube.com/watch?v=g_tea8ZNk5A", equipment: "Variable" },
-      
-      // PIERNAS PRINCIPAL
-      { name: "📋 TRABAJO DE PIERNAS", type: "Sección", sets: 1, reps: "", rest: 0, isTime: false, description: "Now we hit legs", videoUrl: "", equipment: "Sección" },
-      { name: "Sentadillas traseras", type: "Fuerza", sets: 3, reps: "10", rest: 90, isTime: false, description: "Back squats", videoUrl: "https://www.youtube.com/watch?v=ultWZbUMPL8", equipment: "Barra + Rack" },
-      { name: "Box step ups", type: "Fuerza", sets: 3, reps: "10 c/pierna", rest: 60, isTime: false, description: "Each leg - subidas al cajón", videoUrl: "https://www.youtube.com/watch?v=5aHSMnTwIRg", equipment: "Cajón" },
-      { name: "Sentadillas elevadas", type: "Fuerza", sets: 2, reps: "12", rest: 60, isTime: false, description: "Elevated squats", videoUrl: "https://www.youtube.com/watch?v=KB5YRpgWuRY", equipment: "Plataforma/Discos" },
-      { name: "Prensa de piernas", type: "Fuerza", sets: 4, reps: "10", rest: 60, isTime: false, description: "Leg press", videoUrl: "https://www.youtube.com/watch?v=IZxyjW7MPJQ", equipment: "Prensa" },
-      { name: "Extensión de cuádriceps", type: "Fuerza", sets: 3, reps: "12", rest: 45, isTime: false, description: "Leg extension", videoUrl: "https://www.youtube.com/watch?v=YyvSfVjQeL0", equipment: "Máquina de extensión" },
-      { name: "Curl de isquiotibiales", type: "Fuerza", sets: 3, reps: "12", rest: 45, isTime: false, description: "Leg curls", videoUrl: "https://www.youtube.com/watch?v=F488uJAQgmw", equipment: "Máquina de curl" },
-      { name: "Elevación de gemelos", type: "Fuerza", sets: 4, reps: "12", rest: 30, isTime: false, description: "Calf raises", videoUrl: "https://www.youtube.com/watch?v=_M2Etme-tfU", equipment: "Máquina/Mancuernas" },
-      
-      // FINALIZADOR
-      { name: "📋 FINISHER", type: "Sección", sets: 1, reps: "", rest: 0, isTime: false, description: "Finalizador de core", videoUrl: "", equipment: "Sección" },
-      { name: "Cable crunch", type: "Core", sets: 1, reps: "40", rest: 0, isTime: false, description: "40 reps cable crunch", videoUrl: "https://www.youtube.com/watch?v=2fbujeH3F0E", equipment: "Cable" }
-    ]
-  },
-  domingo: {
-    name: "Día de Recuperación",
-    description: "Recuperación activa - El descanso es parte del plan",
-    type: "Recuperación",
-    difficulty: "Fácil",
-    duration: "20-30 min",
-    calories: "100-150",
-    color: "from-gray-500 to-gray-600",
-    exercises: [
-      { name: "📋 RECUPERACIÓN ACTIVA", type: "Sección", sets: 1, reps: "", rest: 0, isTime: false, description: "Recovery is part of the plan", videoUrl: "", equipment: "Sección" },
-      { name: "Estiramientos o foam roll", type: "Movilidad", sets: 1, reps: "10 min", rest: 0, isTime: true, duration: 600, description: "Stretch or foam roll", videoUrl: "https://www.youtube.com/watch?v=t4A523-O5uk", equipment: "Foam roller opcional" },
-      { name: "Caminata", type: "Cardio", sets: 1, reps: "20-30 min", rest: 0, isTime: true, duration: 1500, description: "20-30 mins walk", videoUrl: "https://www.youtube.com/watch?v=lJLrfKzKdpQ", equipment: "Ninguno" },
-      { name: "Hidratación agresiva", type: "Recuperación", sets: 1, reps: "Todo el día", rest: 0, isTime: false, description: "Hydrate aggressively - Don't confuse rest with weakness, Lions rest before they hunt", videoUrl: "https://www.youtube.com/watch?v=cJVEhswfuxk", equipment: "Agua" }
-    ]
-  }
+    lunes: {
+        title: "Piernas y Gl��teos Pesado",
+        exercises: [
+            { name: "Sentadilla con Barra", sets: 5, reps: "6-8", rest: 180, type: 'reps' },
+            { name: "Peso Muerto Rumano", sets: 4, reps: "8-10", rest: 150, type: 'reps' },
+            { name: "Prensa de Piernas", sets: 4, reps: "12-15", rest: 120, type: 'reps' },
+            { name: "Plancha frontal", sets: 3, duration: 60, rest: 45, type: 'time' },
+            { name: "Plancha lateral", sets: 2, duration: 30, rest: 30, type: 'time' },
+        ]
+    },
+    martes: { title: "Pecho y Tr��ceps", exercises: [/* ... */] },
+    miercoles: {
+        title: "HIIT Metab��lico + Core",
+        exercises: [
+            { name: "Battle ropes", sets: 6, duration: 30, rest: 90, type: 'time' },
+            { name: "Remo erg��metro", sets: 6, duration: 45, rest: 90, type: 'time' },
+            { name: "Bicicleta asalto", sets: 6, duration: 30, rest: 90, type: 'time' },
+            { name: "Burpees", sets: 6, reps: 10, rest: 90, type: 'reps' },
+        ]
+    },
+    jueves: { title: "Espalda y B��ceps", exercises: [/* ... */] },
+    viernes: { title: "Hombros y Trapecio", exercises: [/* ... */] },
+    sabado: { title: "Circuito Funcional", exercises: [/* ... */] },
+    domingo: { title: "Recuperaci��n Activa", exercises: [/* ... */] }
 };
 
-// Función para crear sonido usando Web Audio API
-const createBeepSound = () => {
-  let audioContext = null;
-  
-  const initAudio = () => {
-    if (!audioContext) {
-      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+const nutritionData = {
+    fase1: {
+        calories: 2100, protein: 195, carbs: 180, fats: 67,
+        meals: [
+            { name: "??? Comida Principal", time: "15:00", items: ["250g pechuga de pollo", "220g arroz basmati", "200g br��coli"], calories: 840, macros: "P:60g | C:85g | G:15g" },
+            { name: "?? Merienda", time: "17:30", items: ["Tu batido completo", "30g prote��na", "37g carbos"], calories: 376, macros: "P:30g | C:37g | G:12g" },
+            { name: "??? Cena", time: "19:30", items: ["200g merluza", "150g arroz integral", "300g verduras"], calories: 700, macros: "P:46g | C:72g | G:24g" },
+        ]
     }
-    // Resume context if suspended (for mobile browsers)
-    if (audioContext.state === 'suspended') {
-      audioContext.resume();
-    }
-  };
-  
-  const playBeep = (frequency = 800, duration = 200) => {
-    try {
-      initAudio();
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-      
-      oscillator.frequency.value = frequency;
-      oscillator.type = 'sine';
-      
-      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration / 1000);
-      
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + duration / 1000);
-    } catch (error) {
-      console.log('Error playing sound:', error);
-    }
-  };
-  
-  return {
-    init: initAudio,
-    beep: () => playBeep(800, 200),
-    countdownBeep: () => playBeep(600, 150),
-    finalBeep: () => playBeep(1000, 500),
-    warningBeep: () => playBeep(900, 100)
-  };
 };
 
-// Componente principal mejorado
-function App() {
-  const [currentView, setCurrentView] = useState('dashboard');
-  const [selectedDay, setSelectedDay] = useState('lunes');
-  const [sessionTimer, setSessionTimer] = useState(0);
-  const [isSessionActive, setIsSessionActive] = useState(false);
-  const [sessionPaused, setSessionPaused] = useState(false);
-  const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
-  const [currentSet, setCurrentSet] = useState(1);
-  const [exerciseTimer, setExerciseTimer] = useState(0);
-  const [isExerciseTimerActive, setIsExerciseTimerActive] = useState(false);
-  const [timerType, setTimerType] = useState(''); // 'exercise' or 'rest'
-  const [workoutData, setWorkoutData] = useState({});
-  const [progressPhotos, setProgressPhotos] = useState({ frontal: [], lateral: [], trasera: [] });
-  const [measurements, setMeasurements] = useState([
-    { date: '2025-09-01', weight: 75, bodyFat: 22, waist: 90 },
-    { date: '2025-09-15', weight: 74.5, bodyFat: 21.5, waist: 89 },
-    { date: '2025-10-01', weight: 73.8, bodyFat: 21, waist: 88 },
-  ]);
-  const [workoutHistory, setWorkoutHistory] = useState([]);
-  const [soundEnabled, setSoundEnabled] = useState(true);
-  const [userProfile, setUserProfile] = useState({
-    name: "Usuario",
-    age: 55,
-    goal: "Perder grasa y ganar músculo",
-    level: 1,
-    experience: 0,
-    totalWorkouts: 0,
-    streak: 0,
-    badges: []
-  });
-  const [achievements, setAchievements] = useState([
-    { id: 1, name: "Primera Semana", icon: "🏃", unlocked: false, description: "Completa tu primera semana" },
-    { id: 2, name: "10 Entrenamientos", icon: "💪", unlocked: false, description: "Completa 10 entrenamientos" },
-    { id: 3, name: "Racha de 7 días", icon: "🔥", unlocked: false, description: "Entrena 7 días seguidos" },
-    { id: 4, name: "Maestro del HIIT", icon: "⚡", unlocked: false, description: "Completa 20 sesiones HIIT" },
-    { id: 5, name: "Transformación", icon: "🦋", unlocked: false, description: "Pierde 5kg de peso" },
-  ]);
-  const [newMeasurement, setNewMeasurement] = useState({});
-  
-  // Referencia para el sonido
-  const soundRef = useRef(null);
-  
-  // Inicializar sonido
-  useEffect(() => {
-    soundRef.current = createBeepSound();
-  }, []);
+const supplements = {
+    morning: [
+        { name: 'Multivitam��nico +50', dose: '1 c��psula' },
+        { name: 'Vitamina D3', dose: '4000 UI' },
+        { name: 'Omega 3', dose: '2g EPA/DHA' },
+    ],
+    preWorkout: [
+        { name: 'Creatina', dose: '5g' },
+        { name: 'Beta-Alanina', dose: '3-5g' },
+    ],
+    night: [
+        { name: 'Magnesio', dose: '400mg' },
+        { name: 'Zinc', dose: '30mg' },
+        { name: 'Ashwagandha', dose: '600mg' },
+    ]
+};
 
-  // Cronómetro de sesión
-  useEffect(() => {
-    let interval = null;
-    if (isSessionActive && !sessionPaused) {
-      interval = setInterval(() => {
-        setSessionTimer(timer => timer + 1);
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [isSessionActive, sessionPaused]);
+// ===================================================================================
+// HOOK DE AUDIO (Normalmente ir��a en /hooks/useAudioPlayer.js)
+// ===================================================================================
 
-  // Cronómetro de ejercicio con sonido mejorado
-  useEffect(() => {
-    let interval = null;
-    if (isExerciseTimerActive && exerciseTimer > 0) {
-      interval = setInterval(() => {
-        setExerciseTimer(timer => {
-          // Sonidos de aviso
-          if (soundEnabled && soundRef.current) {
-            if (timer === 4) soundRef.current.countdownBeep();
-            if (timer === 3) soundRef.current.countdownBeep();
-            if (timer === 2) soundRef.current.countdownBeep();
-            if (timer === 1) soundRef.current.finalBeep();
-          }
-          
-          if (timer <= 1) {
-            setIsExerciseTimerActive(false);
-            
-            // Auto-avanzar después del ejercicio
-            if (timerType === 'exercise') {
-              const currentWorkout = workoutProgram[selectedDay];
-              const currentExercise = currentWorkout.exercises[currentExerciseIndex];
-              
-              // Si hay descanso, iniciarlo automáticamente
-              if (currentExercise.rest > 0) {
-                setTimeout(() => {
-                  startRestTimer();
-                }, 500);
-              }
-            } else if (timerType === 'rest') {
-              // Después del descanso, ir a la siguiente serie o ejercicio
-              const currentWorkout = workoutProgram[selectedDay];
-              const currentExercise = currentWorkout.exercises[currentExerciseIndex];
-              
-              if (currentSet < currentExercise.sets) {
-                setCurrentSet(currentSet + 1);
-                // Si es un ejercicio de tiempo, iniciar automáticamente
-                if (currentExercise.isTime) {
-                  setTimeout(() => {
-                    startExerciseTimer();
-                  }, 500);
+const useAudioPlayer = () => {
+    const sounds = useRef({});
+
+    useEffect(() => {
+        const loadSounds = async () => {
+            try {
+                const soundMap = {
+                    start: require('./assets/sounds/start.wav'),
+                    countdown: require('./assets/sounds/countdown.wav'),
+                    end: require('./assets/sounds/end.wav'),
+                    rest: require('./assets/sounds/rest.wav'),
+                };
+                for (const key in soundMap) {
+                    const { sound } = await Audio.Sound.createAsync(soundMap[key]);
+                    sounds.current[key] = sound;
                 }
-              } else {
-                // Marcar ejercicio como completado y pasar al siguiente
-                markExerciseComplete(currentExerciseIndex);
-                if (currentExerciseIndex < currentWorkout.exercises.length - 1) {
-                  setTimeout(() => {
-                    nextExercise();
-                  }, 500);
-                }
-              }
+            } catch (error) {
+                console.error("Error al cargar los sonidos:", error);
             }
-          }
-          return timer - 1;
-        });
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [isExerciseTimerActive, exerciseTimer, soundEnabled, timerType, currentSet, currentExerciseIndex]);
-
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const startSession = () => {
-    setIsSessionActive(true);
-    setSessionPaused(false);
-    setCurrentSet(1);
-    
-    // Si el primer ejercicio es de tiempo, iniciar automáticamente
-    const currentExercise = workoutProgram[selectedDay].exercises[0];
-    if (currentExercise.isTime) {
-      setTimeout(() => {
-        startExerciseTimer();
-      }, 1000);
-    }
-  };
-
-  const pauseSession = () => {
-    setSessionPaused(!sessionPaused);
-    if (!sessionPaused) {
-      setIsExerciseTimerActive(false);
-    }
-  };
-
-  const stopSession = () => {
-    if (window.confirm('¿Estás seguro de que quieres terminar el entrenamiento?')) {
-      setIsSessionActive(false);
-      setSessionPaused(false);
-      setSessionTimer(0);
-      setExerciseTimer(0);
-      setIsExerciseTimerActive(false);
-      setTimerType('');
-      setCurrentSet(1);
-    }
-  };
-
-  const nextExercise = () => {
-    const currentWorkout = workoutProgram[selectedDay];
-    if (currentExerciseIndex < currentWorkout.exercises.length - 1) {
-      setCurrentExerciseIndex(currentExerciseIndex + 1);
-      setCurrentSet(1);
-      setExerciseTimer(0);
-      setIsExerciseTimerActive(false);
-      setTimerType('');
-      
-      // Auto-iniciar si el siguiente ejercicio es de tiempo
-      const nextExercise = currentWorkout.exercises[currentExerciseIndex + 1];
-      if (nextExercise.isTime && isSessionActive) {
-        setTimeout(() => {
-          startExerciseTimer();
-        }, 1000);
-      }
-    }
-  };
-
-  const prevExercise = () => {
-    if (currentExerciseIndex > 0) {
-      setCurrentExerciseIndex(currentExerciseIndex - 1);
-      setCurrentSet(1);
-      setExerciseTimer(0);
-      setIsExerciseTimerActive(false);
-      setTimerType('');
-    }
-  };
-
-  const startExerciseTimer = () => {
-    const currentExercise = workoutProgram[selectedDay].exercises[currentExerciseIndex];
-    if (currentExercise.isTime) {
-      setExerciseTimer(currentExercise.duration);
-      setIsExerciseTimerActive(true);
-      setTimerType('exercise');
-      if (soundEnabled && soundRef.current) {
-        soundRef.current.beep();
-      }
-    }
-  };
-
-  const startRestTimer = () => {
-    const currentExercise = workoutProgram[selectedDay].exercises[currentExerciseIndex];
-    if (currentExercise.rest > 0) {
-      setExerciseTimer(currentExercise.rest);
-      setIsExerciseTimerActive(true);
-      setTimerType('rest');
-      if (soundEnabled && soundRef.current) {
-        soundRef.current.warningBeep();
-      }
-    }
-  };
-
-  const skipTimer = () => {
-    setExerciseTimer(0);
-    setIsExerciseTimerActive(false);
-    
-    if (timerType === 'rest') {
-      const currentWorkout = workoutProgram[selectedDay];
-      const currentExercise = currentWorkout.exercises[currentExerciseIndex];
-      
-      if (currentSet < currentExercise.sets) {
-        setCurrentSet(currentSet + 1);
-      } else {
-        markExerciseComplete(currentExerciseIndex);
-        if (currentExerciseIndex < currentWorkout.exercises.length - 1) {
-          nextExercise();
-        }
-      }
-    }
-    setTimerType('');
-  };
-
-  const markExerciseComplete = (index) => {
-    setWorkoutData(prev => ({
-      ...prev,
-      [index]: {
-        ...prev[index],
-        completed: true,
-        timestamp: new Date().toISOString(),
-        sets: workoutProgram[selectedDay].exercises[index].sets
-      }
-    }));
-    
-    // Añadir experiencia
-    setUserProfile(prev => ({
-      ...prev,
-      experience: prev.experience + 10
-    }));
-    
-    if (soundEnabled && soundRef.current) {
-      soundRef.current.finalBeep();
-    }
-  };
-
-  const saveWorkout = () => {
-    const sessionData = {
-      date: new Date().toISOString().split('T')[0],
-      day: selectedDay,
-      workout: workoutProgram[selectedDay].name,
-      duration: Math.floor(sessionTimer / 60),
-      exercises: workoutData,
-      completed: true,
-      calories: workoutProgram[selectedDay].calories.split('-')[1]
-    };
-    
-    setWorkoutHistory(prev => [...prev, sessionData]);
-    
-    // Actualizar perfil
-    setUserProfile(prev => ({
-      ...prev,
-      totalWorkouts: prev.totalWorkouts + 1,
-      experience: prev.experience + 50,
-      level: Math.floor((prev.experience + 50) / 100) + 1,
-      streak: prev.streak + 1
-    }));
-    
-    // Reiniciar todo
-    setWorkoutData({});
-    setCurrentExerciseIndex(0);
-    setCurrentSet(1);
-    setSessionTimer(0);
-    setIsSessionActive(false);
-    setSessionPaused(false);
-    setExerciseTimer(0);
-    setIsExerciseTimerActive(false);
-    setTimerType('');
-    
-    alert('🎉 ¡Entrenamiento completado! +50 XP');
-  };
-
-  const addMeasurement = (weight, bodyFat, waist) => {
-    const newMeasurementData = {
-      date: new Date().toISOString().split('T')[0],
-      weight: parseFloat(weight),
-      bodyFat: parseFloat(bodyFat),
-      waist: parseFloat(waist)
-    };
-    setMeasurements(prev => [...prev, newMeasurementData]);
-    setNewMeasurement({});
-  };
-
-  const handlePhotoUpload = (category, event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const newPhoto = {
-          date: new Date().toISOString().split('T')[0],
-          url: e.target.result
         };
-        setProgressPhotos(prev => ({
-          ...prev,
-          [category]: [...prev[category], newPhoto].slice(-3)
-        }));
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+        loadSounds();
+        return () => {
+            Object.values(sounds.current).forEach(sound => sound.unloadAsync());
+        };
+    }, []);
 
-  const handleCameraCapture = (category) => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.capture = 'environment'; // Use 'user' for front camera
-    
-    input.onchange = (event) => {
-      handlePhotoUpload(category, event);
+    const playSound = useCallback(async (soundName) => {
+        try {
+            if (sounds.current[soundName]) {
+                await sounds.current[soundName].replayAsync();
+            }
+        } catch (error) {
+            console.error(`Error al reproducir ${soundName}:`, error);
+        }
+    }, []);
+
+    return playSound;
+};
+
+
+// ===================================================================================
+// PANTALLAS DE LA APLICACI��N (Normalmente ir��an en /screens/)
+// ===================================================================================
+
+// --- Pantalla de Panel ---
+const DashboardScreen = ({ navigation }) => (
+    <View style={styles.container}>
+        <Text style={styles.title}>Panel</Text>
+        <TouchableOpacity style={styles.heroCard} onPress={() => navigation.navigate('Entrenar')}>
+            <Text style={styles.heroTitle}>Entrenamiento de Hoy</Text>
+            <Text style={styles.heroSubtitle}>{workoutProgram.lunes.title}</Text>
+            <Text style={styles.heroButtonText}>?? COMENZAR ENTRENAMIENTO</Text>
+        </TouchableOpacity>
+    </View>
+);
+
+// --- Pantalla de Entrenamiento (CON TEMPORIZADOR INTELIGENTE) ---
+const WorkoutScreen = () => {
+    const initialExercises = workoutProgram.miercoles.exercises.map(ex => ({ ...ex, completed: false }));
+    const [exercises, setExercises] = useState(initialExercises);
+    const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
+    const [currentSet, setCurrentSet] = useState(1);
+    const [timer, setTimer] = useState(0);
+    const [isTimerRunning, setIsTimerRunning] = useState(false);
+    const [timerMode, setTimerMode] = useState('idle'); // 'idle', 'active', 'rest', 'finished'
+    const [isSoundOn, setIsSoundOn] = useState(true);
+    const playSound = useAudioPlayer();
+    const intervalRef = useRef(null);
+
+    useEffect(() => {
+        if (!isTimerRunning) return;
+
+        intervalRef.current = setInterval(() => {
+            setTimer(prev => {
+                const newTime = prev - 1;
+                if (newTime > 0 && newTime <= 3 && isSoundOn) playSound('countdown');
+                if (newTime <= 0) handleTimerEnd();
+                return newTime;
+            });
+        }, 1000);
+
+        return () => clearInterval(intervalRef.current);
+    }, [isTimerRunning]);
+
+    const handleTimerEnd = () => {
+        clearInterval(intervalRef.current);
+        setIsTimerRunning(false);
+
+        if (timerMode === 'active') {
+            if (isSoundOn) playSound('end');
+            const restTime = exercises[currentExerciseIndex].rest;
+            setTimer(restTime);
+            setTimerMode('rest');
+            setIsTimerRunning(true);
+            if (isSoundOn) playSound('rest');
+        } else if (timerMode === 'rest') {
+            if (isSoundOn) playSound('start');
+            goToNextSetOrExercise();
+        }
     };
+
+    const goToNextSetOrExercise = () => {
+        const currentExercise = exercises[currentExerciseIndex];
+        if (currentSet < currentExercise.sets) {
+            setCurrentSet(prev => prev + 1);
+            setTimerMode('idle');
+        } else {
+            markExerciseAsCompleted(currentExerciseIndex, true); // Mark as fully completed
+            if (currentExerciseIndex < exercises.length - 1) {
+                setCurrentExerciseIndex(prev => prev + 1);
+                setCurrentSet(1);
+                setTimerMode('idle');
+            } else {
+                setTimerMode('finished');
+            }
+        }
+    };
+
+    const startExerciseTimer = () => {
+        const exercise = exercises[currentExerciseIndex];
+        if (exercise.type === 'time') {
+            setTimer(exercise.duration);
+            setTimerMode('active');
+            setIsTimerRunning(true);
+            if (isSoundOn) playSound('start');
+        }
+    };
+
+    const markExerciseAsCompleted = (index, isFinalSet) => {
+        if (!isFinalSet) {
+            const restTime = exercises[index].rest;
+            setTimer(restTime);
+            setTimerMode('rest');
+            setIsTimerRunning(true);
+            if (isSoundOn) playSound('rest');
+        } else {
+            const newExercises = [...exercises];
+            newExercises[index].completed = true;
+            setExercises(newExercises);
+        }
+    };
+
+    const formatTime = (seconds) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    };
+
+    const getTimerBackgroundColor = () => {
+        if (timerMode === 'active') return COLORS.primaryGradient;
+        if (timerMode === 'rest') return COLORS.restGradient;
+        return '#1f2937';
+    };
+
+    const currentExercise = exercises[currentExerciseIndex];
+    if (!currentExercise) return <View style={styles.container}><Text style={styles.title}>Entrenamiento Completado!</Text></View>;
     
-    input.click();
-  };
+    const isTimeBased = currentExercise.type === 'time';
 
-  const toggleSound = () => {
-    setSoundEnabled(!soundEnabled);
-    if (soundRef.current && !soundEnabled) {
-      // Initialize audio context on user interaction
-      soundRef.current.init();
-      // Play a test beep when enabling sound
-      soundRef.current.beep();
-    }
-  };
+    return (
+        <ScrollView style={styles.container}>
+            <View style={styles.header}>
+                <Text style={styles.title}>{workoutProgram.miercoles.title}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Ionicons name={isSoundOn ? "volume-high" : "volume-mute"} size={24} color={COLORS.light} />
+                    <Switch value={isSoundOn} onValueChange={setIsSoundOn} trackColor={{ false: COLORS.gray, true: COLORS.primary }} thumbColor={COLORS.light} />
+                </View>
+            </View>
 
-  const currentWorkout = workoutProgram[selectedDay];
-  const currentExercise = currentWorkout.exercises[currentExerciseIndex];
-  const completedExercises = Object.keys(workoutData).filter(key => workoutData[key]?.completed).length;
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      {/* Header Premium */}
-      <header className="bg-black/50 backdrop-blur-lg border-b border-white/10">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-                <Dumbbell className="h-6 w-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-white">FitPlan 53+ Pro</h1>
-                <p className="text-xs text-gray-400">Tu coach personal inteligente</p>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-6">
-              {/* Nivel y Experiencia */}
-              <div className="hidden md:flex items-center gap-2">
-                <div className="text-right">
-                  <div className="text-xs text-gray-400">Nivel {userProfile.level}</div>
-                  <div className="w-32 h-2 bg-gray-700 rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-gradient-to-r from-purple-500 to-pink-500"
-                      style={{ width: `${(userProfile.experience % 100)}%` }}
-                    />
-                  </div>
-                </div>
-                <Award className="h-8 w-8 text-yellow-500" />
-              </div>
-              
-              {/* Racha */}
-              <div className="flex items-center gap-2">
-                <Flame className="h-5 w-5 text-orange-500" />
-                <span className="text-white font-bold">{userProfile.streak}</span>
-              </div>
-              
-              {/* Perfil */}
-              <button className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                <User className="h-5 w-5 text-white" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Navigation Tabs */}
-      <div className="bg-black/30 backdrop-blur-sm border-b border-white/10">
-        <div className="container mx-auto px-4">
-          <div className="flex gap-1 p-1">
-            {[
-              { id: 'dashboard', label: 'Panel', icon: <BarChart3 className="h-4 w-4" /> },
-              { id: 'workout', label: 'Entrenar', icon: <Dumbbell className="h-4 w-4" /> },
-              { id: 'progress', label: 'Progreso', icon: <TrendingUp className="h-4 w-4" /> },
-              { id: 'history', label: 'Historial', icon: <Calendar className="h-4 w-4" /> },
-              { id: 'achievements', label: 'Logros', icon: <Trophy className="h-4 w-4" /> }
-            ].map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setCurrentView(tab.id)}
-                className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${
-                  currentView === tab.id
-                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg'
-                    : 'text-gray-400 hover:text-white hover:bg-white/10'
-                }`}
-              >
-                {tab.icon}
-                <span className="hidden md:inline">{tab.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
-        {/* Dashboard View */}
-        {currentView === 'dashboard' && (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {/* Resumen de Hoy */}
-            <div className="col-span-full bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl p-6 text-white shadow-xl">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-bold">Entrenamiento de Hoy</h2>
-                <Calendar className="h-6 w-6 opacity-70" />
-              </div>
-              <div className="grid md:grid-cols-3 gap-6">
-                <div>
-                  <p className="text-purple-200 text-sm mb-1">Rutina</p>
-                  <p className="text-xl font-bold">{workoutProgram[selectedDay].name}</p>
-                </div>
-                <div>
-                  <p className="text-purple-200 text-sm mb-1">Duración estimada</p>
-                  <p className="text-xl font-bold">{workoutProgram[selectedDay].duration}</p>
-                </div>
-                <div>
-                  <p className="text-purple-200 text-sm mb-1">Calorías</p>
-                  <p className="text-xl font-bold">{workoutProgram[selectedDay].calories} kcal</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setCurrentView('workout')}
-                className="mt-4 w-full bg-white text-purple-600 hover:bg-gray-100 font-bold py-3 rounded-lg transition-colors flex items-center justify-center gap-2"
-              >
-                <Play className="h-5 w-5" />
-                Comenzar Entrenamiento
-              </button>
-            </div>
-
-            {/* Stats Cards */}
-            <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-white/10">
-              <div className="flex items-center justify-between mb-4">
-                <Activity className="h-8 w-8 text-purple-500" />
-                <span className="text-xs text-green-500 font-bold">+2.5%</span>
-              </div>
-              <p className="text-gray-400 text-sm mb-1">Total Entrenamientos</p>
-              <p className="text-3xl font-bold text-white">{userProfile.totalWorkouts}</p>
-            </div>
-
-            <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-white/10">
-              <div className="flex items-center justify-between mb-4">
-                <Flame className="h-8 w-8 text-orange-500" />
-                <span className="text-xs text-green-500 font-bold">🔥 Activa</span>
-              </div>
-              <p className="text-gray-400 text-sm mb-1">Racha Actual</p>
-              <p className="text-3xl font-bold text-white">{userProfile.streak} días</p>
-            </div>
-
-            <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-white/10">
-              <div className="flex items-center justify-between mb-4">
-                <Target className="h-8 w-8 text-green-500" />
-                <span className="text-xs text-yellow-500 font-bold">En progreso</span>
-              </div>
-              <p className="text-gray-400 text-sm mb-1">Meta Semanal</p>
-              <p className="text-3xl font-bold text-white">3/5</p>
-            </div>
-
-            {/* Próximos Entrenamientos */}
-            <div className="col-span-full bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-white/10">
-              <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-purple-500" />
-                Programa Semanal
-              </h3>
-              <div className="grid md:grid-cols-7 gap-3">
-                {Object.entries(workoutProgram).map(([day, workout]) => (
-                  <button
-                    key={day}
-                    onClick={() => {
-                      setSelectedDay(day);
-                      setCurrentView('workout');
-                    }}
-                    className={`p-4 rounded-xl transition-all ${
-                      day === selectedDay
-                        ? 'bg-gradient-to-r ' + workout.color + ' text-white shadow-lg scale-105'
-                        : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                    }`}
-                  >
-                    <p className="font-bold capitalize mb-1 text-xs">{day.substring(0,3)}</p>
-                    <p className="text-xs opacity-80">{workout.exercises.length} ej.</p>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Workout View */}
-        {currentView === 'workout' && (
-          <div className="space-y-6">
-            {/* Session Timer Card */}
-            {isSessionActive && (
-              <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl p-6 text-white shadow-xl">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <Timer className="h-8 w-8" />
-                    <div>
-                      <p className="text-sm opacity-80">Tiempo de Sesión</p>
-                      <p className="text-3xl font-bold">{formatTime(sessionTimer)}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex gap-3">
-                    <button
-                      onClick={toggleSound}
-                      className="p-3 bg-white/20 rounded-lg hover:bg-white/30 transition-colors"
-                      title={soundEnabled ? "Desactivar sonido" : "Activar sonido"}
-                    >
-                      {soundEnabled ? <Volume2 className="h-5 w-5" /> : <VolumeX className="h-5 w-5" />}
-                    </button>
-                    <button
-                      onClick={pauseSession}
-                      className="px-6 py-3 bg-white/20 rounded-lg hover:bg-white/30 transition-colors flex items-center gap-2"
-                    >
-                      {sessionPaused ? <Play className="h-5 w-5" /> : <Pause className="h-5 w-5" />}
-                      {sessionPaused ? 'Reanudar' : 'Pausar'}
-                    </button>
-                    <button
-                      onClick={stopSession}
-                      className="px-6 py-3 bg-red-500 rounded-lg hover:bg-red-600 transition-colors flex items-center gap-2"
-                    >
-                      <RotateCcw className="h-5 w-5" />
-                      Terminar
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Workout Info */}
-            <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-white/10">
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h2 className="text-2xl font-bold text-white mb-2">{currentWorkout.name}</h2>
-                  <p className="text-gray-400">{currentWorkout.description}</p>
-                  <div className="flex items-center gap-4 mt-3">
-                    <span className="text-sm text-purple-400 flex items-center gap-1">
-                      <Clock className="h-4 w-4" />
-                      {currentWorkout.duration}
-                    </span>
-                    <span className="text-sm text-orange-400 flex items-center gap-1">
-                      <Flame className="h-4 w-4" />
-                      {currentWorkout.calories} kcal
-                    </span>
-                    <span className="text-sm text-green-400 flex items-center gap-1">
-                      <Target className="h-4 w-4" />
-                      {currentWorkout.difficulty}
-                    </span>
-                  </div>
-                </div>
+            <View style={[styles.card, { backgroundColor: getTimerBackgroundColor() }]}>
+                 {timerMode === 'finished' ? (
+                    <Text style={styles.timerDisplay}>??</Text>
+                 ) : (
+                    <>
+                        <Text style={styles.exerciseName}>{currentExercise.name}</Text>
+                        <Text style={styles.setInfo}>Serie {currentSet} de {currentExercise.sets}</Text>
+                        <Text style={styles.timerDisplay}>
+                            {isTimeBased || timerMode === 'rest' ? formatTime(timer) : currentExercise.reps}
+                        </Text>
+                    </>
+                 )}
+                <Text style={styles.timerModeText}>
+                    {timerMode === 'active' && '?VAMOS!'}
+                    {timerMode === 'rest' && 'DESCANSO'}
+                    {timerMode === 'idle' && 'Listo para empezar'}
+                    {timerMode === 'finished' && '?ENTRENAMIENTO COMPLETADO!'}
+                </Text>
                 
-                {!isSessionActive ? (
-                  <button
-                    onClick={startSession}
-                    className="px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-xl hover:shadow-xl transition-all flex items-center gap-2"
-                  >
-                    <Play className="h-5 w-5" />
-                    Iniciar
-                  </button>
-                ) : (
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-white">{completedExercises}/{currentWorkout.exercises.length}</div>
-                    <div className="text-sm text-gray-400">Completados</div>
-                  </div>
+                {timerMode === 'idle' && isTimeBased && (
+                    <TouchableOpacity style={styles.btnPrimary} onPress={startExerciseTimer}>
+                        <Text style={styles.btnText}>?? INICIAR SERIE</Text>
+                    </TouchableOpacity>
                 )}
-              </div>
+            </View>
 
-              {/* Progress Bar */}
-              <div className="w-full bg-gray-700 rounded-full h-3 mb-6">
-                <div 
-                  className="h-3 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-500"
-                  style={{ width: `${(completedExercises / currentWorkout.exercises.length) * 100}%` }}
-                />
-              </div>
-
-              {/* Current Exercise */}
-              {isSessionActive && (
-                <div className="bg-gray-800 rounded-xl p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <button
-                      onClick={prevExercise}
-                      disabled={currentExerciseIndex === 0}
-                      className="p-2 bg-gray-700 rounded-lg hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <ChevronLeft className="h-5 w-5 text-white" />
-                    </button>
-                    
-                    <div className="text-center">
-                      <p className="text-gray-400 text-sm">
-                        Ejercicio {currentExerciseIndex + 1} de {currentWorkout.exercises.length}
-                        {currentExercise.sets > 1 && ` • Serie ${currentSet}/${currentExercise.sets}`}
-                      </p>
-                      <h3 className="text-xl font-bold text-white mt-1">{currentExercise.name}</h3>
-                    </div>
-                    
-                    <button
-                      onClick={nextExercise}
-                      disabled={currentExerciseIndex === currentWorkout.exercises.length - 1}
-                      className="p-2 bg-gray-700 rounded-lg hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <ChevronRight className="h-5 w-5 text-white" />
-                    </button>
-                  </div>
-
-                  <div className="bg-gray-900 rounded-lg p-4 mb-4">
-                    <p className="text-gray-300 mb-3">{currentExercise.description}</p>
-                    
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      <div className="bg-gray-800 rounded-lg p-3">
-                        <p className="text-xs text-gray-400 mb-1">Series</p>
-                        <p className="text-lg font-bold text-white">{currentExercise.sets}</p>
-                      </div>
-                      <div className="bg-gray-800 rounded-lg p-3">
-                        <p className="text-xs text-gray-400 mb-1">Repeticiones</p>
-                        <p className="text-lg font-bold text-white">{currentExercise.reps}</p>
-                      </div>
-                      <div className="bg-gray-800 rounded-lg p-3">
-                        <p className="text-xs text-gray-400 mb-1">Descanso</p>
-                        <p className="text-lg font-bold text-white">{currentExercise.rest} seg</p>
-                      </div>
-                      <div className="bg-gray-800 rounded-lg p-3">
-                        <p className="text-xs text-gray-400 mb-1">Equipo</p>
-                        <p className="text-lg font-bold text-white">{currentExercise.equipment}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Botón de Video de YouTube */}
-                  {currentExercise.videoUrl && (
-                    <div className="mb-4">
-                      <a
-                        href={currentExercise.videoUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-full px-4 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
-                      >
-                        <Youtube className="h-5 w-5" />
-                        Ver Tutorial en YouTube
-                      </a>
-                    </div>
-                  )}
-
-                  {/* Exercise/Rest Timer Display */}
-                  {isExerciseTimerActive && (
-                    <div className="mb-6">
-                      <div className={`text-center p-6 rounded-xl ${
-                        timerType === 'rest' 
-                          ? 'bg-gradient-to-r from-blue-600 to-cyan-600' 
-                          : 'bg-gradient-to-r from-purple-600 to-pink-600'
-                      }`}>
-                        <p className="text-white text-sm mb-2">
-                          {timerType === 'rest' ? '⏸️ DESCANSO' : '💪 EJERCICIO'}
-                        </p>
-                        <div className="text-6xl font-bold text-white">
-                          {formatTime(exerciseTimer)}
-                        </div>
-                        <p className="text-white/80 text-sm mt-2">
-                          {timerType === 'exercise' 
-                            ? `Serie ${currentSet} de ${currentExercise.sets}`
-                            : 'Prepárate para la siguiente serie'}
-                        </p>
-                        
-                        {/* Skip button */}
-                        <button
-                          onClick={skipTimer}
-                          className="mt-4 px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg transition-colors flex items-center justify-center gap-2 mx-auto"
-                        >
-                          <SkipForward className="h-4 w-4" />
-                          Saltar
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Action Buttons */}
-                  <div className="grid grid-cols-2 gap-3">
-                    {currentExercise.isTime && !isExerciseTimerActive && timerType !== 'rest' && (
-                      <button
-                        onClick={startExerciseTimer}
-                        className="px-4 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
-                      >
-                        <Timer className="h-5 w-5" />
-                        Iniciar Ejercicio ({currentExercise.duration} seg)
-                      </button>
+            {exercises.map((ex, index) => (
+                <View key={index} style={[styles.exerciseCard, ex.completed && styles.completedCard, index === currentExerciseIndex && styles.currentExerciseCard]}>
+                    <Text style={styles.exName}>{index + 1}. {ex.name} - {ex.sets}x{ex.reps || `${ex.duration}s`}</Text>
+                    {index === currentExerciseIndex && timerMode === 'idle' && !isTimeBased && (
+                        <TouchableOpacity style={styles.btnSmall} onPress={() => goToNextSetOrExercise()}>
+                            <Text style={styles.btnSmallText}>? MARCAR SERIE {currentSet} HECHA</Text>
+                        </TouchableOpacity>
                     )}
-                    
-                    {currentExercise.rest > 0 && !isExerciseTimerActive && !currentExercise.isTime && (
-                      <button
-                        onClick={startRestTimer}
-                        className="px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
-                      >
-                        <Timer className="h-5 w-5" />
-                        Iniciar Descanso ({currentExercise.rest} seg)
-                      </button>
-                    )}
-                    
-                    <button
-                      onClick={() => markExerciseComplete(currentExerciseIndex)}
-                      disabled={workoutData[currentExerciseIndex]?.completed}
-                      className="px-4 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
-                    >
-                      {workoutData[currentExerciseIndex]?.completed ? (
-                        <>
-                          <CheckCircle className="h-5 w-5" />
-                          Completado
-                        </>
-                      ) : (
-                        <>
-                          <Circle className="h-5 w-5" />
-                          Marcar Completo
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
-              )}
+                </View>
+            ))}
+        </ScrollView>
+    );
+};
 
-              {/* Exercise List */}
-              <div className="mt-6">
-                <h4 className="text-lg font-bold text-white mb-4">Lista de Ejercicios</h4>
-                <div className="space-y-2">
-                  {currentWorkout.exercises.map((exercise, index) => (
-                    <button
-                      key={index}
-                      onClick={() => {
-                        setCurrentExerciseIndex(index);
-                        setCurrentSet(1);
-                        setExerciseTimer(0);
-                        setIsExerciseTimerActive(false);
-                        setTimerType('');
-                      }}
-                      className={`w-full p-3 rounded-lg flex items-center justify-between transition-all ${
-                        index === currentExerciseIndex
-                          ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
-                          : workoutData[index]?.completed
-                          ? 'bg-green-900/50 text-green-400'
-                          : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        {workoutData[index]?.completed ? (
-                          <CheckCircle className="h-5 w-5" />
-                        ) : (
-                          <Circle className="h-5 w-5" />
-                        )}
-                        <span>{exercise.name}</span>
-                      </div>
-                      <span className="text-sm opacity-80">
-                        {exercise.sets} x {exercise.reps}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </div>
 
-              {/* Complete Workout Button */}
-              {isSessionActive && completedExercises === currentWorkout.exercises.length && (
-                <button
-                  onClick={saveWorkout}
-                  className="mt-6 w-full py-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold text-lg rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2"
+// --- Pantalla de Nutrici��n ---
+const NutritionScreen = () => {
+    const data = nutritionData.fase1;
+    return (
+        <ScrollView style={styles.container}>
+            <Text style={styles.title}>Nutrici��n - Fase 1</Text>
+            <View style={styles.macroGrid}>
+                <View style={styles.macroCard}><Text style={styles.macroValue}>{data.protein}g</Text><Text style={styles.macroLabel}>Prote��na</Text></View>
+                <View style={styles.macroCard}><Text style={styles.macroValue}>{data.carbs}g</Text><Text style={styles.macroLabel}>Carbos</Text></View>
+                <View style={styles.macroCard}><Text style={styles.macroValue}>{data.fats}g</Text><Text style={styles.macroLabel}>Grasas</Text></View>
+            </View>
+            {data.meals.map((meal, index) => (
+                 <View key={index} style={styles.mealCard}>
+                    <View style={styles.mealHeader}>
+                        <Text style={styles.mealName}>{meal.name}</Text>
+                        <Text style={styles.mealTime}>{meal.time}</Text>
+                    </View>
+                    <Text style={styles.mealItems}>{meal.items.join('\n')}</Text>
+                    <Text style={styles.mealMacros}>{meal.calories} kcal | {meal.macros}</Text>
+                </View>
+            ))}
+        </ScrollView>
+    );
+};
+
+// --- Pantalla de Suplementos ---
+const SupplementItem = ({ name, dose }) => {
+    const [checked, setChecked] = useState(false);
+    return (
+        <TouchableOpacity style={styles.supplementItem} onPress={() => setChecked(!checked)}>
+            <View>
+                <Text style={styles.supplementName}>{name}</Text>
+                <Text style={styles.supplementDose}>{dose}</Text>
+            </View>
+            <View style={[styles.supplementCheck, checked && styles.supplementChecked]}>
+                {checked && <Ionicons name="checkmark" size={18} color="white" />}
+            </View>
+        </TouchableOpacity>
+    );
+};
+
+const SupplementsScreen = () => (
+    <ScrollView style={styles.container}>
+        <Text style={styles.title}>Suplementaci��n</Text>
+        <View style={styles.supplementBlock}>
+            <Text style={styles.supplementTitle}>?? Ma?ana</Text>
+            {supplements.morning.map(s => <SupplementItem key={s.name} {...s} />)}
+        </View>
+        <View style={styles.supplementBlock}>
+            <Text style={styles.supplementTitle}>?? Pre-Entreno</Text>
+            {supplements.preWorkout.map(s => <SupplementItem key={s.name} {...s} />)}
+        </View>
+        <View style={styles.supplementBlock}>
+            <Text style={styles.supplementTitle}>?? Noche</Text>
+            {supplements.night.map(s => <SupplementItem key={s.name} {...s} />)}
+        </View>
+    </ScrollView>
+);
+
+// --- Pantalla de Progreso ---
+const ProgressScreen = () => (
+    <View style={styles.container}>
+        <Text style={styles.title}>Progreso</Text>
+        <View style={styles.card}>
+             <Text style={styles.progressLabel}>Pr��ximamente...</Text>
+        </View>
+    </View>
+);
+
+
+// ===================================================================================
+// NAVEGADOR PRINCIPAL Y COMPONENTE APP
+// ===================================================================================
+const Tab = createBottomTabNavigator();
+
+export default function App() {
+    return (
+        <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.dark }}>
+            <StatusBar barStyle="light-content" />
+            <NavigationContainer>
+                <Tab.Navigator
+                    screenOptions={({ route }) => ({
+                        tabBarIcon: ({ focused, color, size }) => {
+                            let iconName;
+                            if (route.name === 'Panel') iconName = focused ? 'stats-chart' : 'stats-chart-outline';
+                            else if (route.name === 'Entrenar') iconName = focused ? 'barbell' : 'barbell-outline';
+                            else if (route.name === 'Nutrici��n') iconName = focused ? 'restaurant' : 'restaurant-outline';
+                            else if (route.name === 'Suplementos') iconName = focused ? 'medical' : 'medical-outline';
+                            else if (route.name === 'Progreso') iconName = focused ? 'trending-up' : 'trending-up-outline';
+                            return <Ionicons name={iconName} size={size} color={color} />;
+                        },
+                        tabBarActiveTintColor: COLORS.primary,
+                        tabBarInactiveTintColor: COLORS.gray,
+                        tabBarStyle: { backgroundColor: '#111827', borderTopColor: '#1f2937' },
+                        headerShown: false,
+                    })}
                 >
-                  <Trophy className="h-6 w-6" />
-                  Finalizar y Guardar Entrenamiento
-                </button>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Progress View */}
-        {currentView === 'progress' && (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-white mb-6">Tu Progreso</h2>
-            
-            {/* Measurements Stats */}
-            <div className="grid md:grid-cols-3 gap-6">
-              {measurements.length > 0 && (
-                <>
-                  <div className="bg-gradient-to-r from-blue-600 to-cyan-600 rounded-xl p-6 text-white">
-                    <div className="flex items-center justify-between mb-2">
-                      <Target className="h-8 w-8 opacity-70" />
-                      <span className="text-sm bg-white/20 px-2 py-1 rounded">
-                        {measurements[measurements.length - 1].weight - measurements[0].weight > 0 ? '+' : ''}{(measurements[measurements.length - 1].weight - measurements[0].weight).toFixed(1)} kg
-                      </span>
-                    </div>
-                    <p className="text-sm opacity-80 mb-1">Peso Actual</p>
-                    <p className="text-3xl font-bold">{measurements[measurements.length - 1].weight} kg</p>
-                  </div>
-                  
-                  <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl p-6 text-white">
-                    <div className="flex items-center justify-between mb-2">
-                      <Activity className="h-8 w-8 opacity-70" />
-                      <span className="text-sm bg-white/20 px-2 py-1 rounded">
-                        {measurements[measurements.length - 1].bodyFat - measurements[0].bodyFat > 0 ? '+' : ''}{(measurements[measurements.length - 1].bodyFat - measurements[0].bodyFat).toFixed(1)}%
-                      </span>
-                    </div>
-                    <p className="text-sm opacity-80 mb-1">% Grasa Corporal</p>
-                    <p className="text-3xl font-bold">{measurements[measurements.length - 1].bodyFat}%</p>
-                  </div>
-                  
-                  <div className="bg-gradient-to-r from-green-600 to-emerald-600 rounded-xl p-6 text-white">
-                    <div className="flex items-center justify-between mb-2">
-                      <TrendingUp className="h-8 w-8 opacity-70" />
-                      <span className="text-sm bg-white/20 px-2 py-1 rounded">
-                        {measurements[measurements.length - 1].waist - measurements[0].waist > 0 ? '+' : ''}{(measurements[measurements.length - 1].waist - measurements[0].waist).toFixed(1)} cm
-                      </span>
-                    </div>
-                    <p className="text-sm opacity-80 mb-1">Cintura</p>
-                    <p className="text-3xl font-bold">{measurements[measurements.length - 1].waist} cm</p>
-                  </div>
-                </>
-              )}
-            </div>
-
-            {/* Progress Chart */}
-            <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-white/10">
-              <h3 className="text-xl font-bold text-white mb-4">Evolución del Peso</h3>
-              <div className="h-64 flex items-end justify-around">
-                {measurements.map((measurement, index) => (
-                  <div key={index} className="flex flex-col items-center gap-2">
-                    <div className="text-white font-bold">{measurement.weight}kg</div>
-                    <div 
-                      className="w-16 bg-gradient-to-t from-purple-500 to-pink-500 rounded-t-lg"
-                      style={{ height: `${(measurement.weight / 80) * 200}px` }}
-                    />
-                    <div className="text-xs text-gray-400">
-                      {new Date(measurement.date).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' })}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Photos Section */}
-            <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-white/10">
-              <h3 className="text-xl font-bold text-white mb-4">Fotos de Progreso</h3>
-              <div className="grid md:grid-cols-3 gap-6">
-                {['frontal', 'lateral', 'trasera'].map((view) => (
-                  <div key={view} className="space-y-3">
-                    <h4 className="text-gray-300 capitalize font-bold">{view}</h4>
-                    <div className="bg-gray-800 rounded-lg p-4">
-                      {progressPhotos[view].length > 0 ? (
-                        <div className="space-y-3">
-                          <div className="grid grid-cols-3 gap-2">
-                            {progressPhotos[view].map((photo, index) => (
-                              <div key={index} className="relative group">
-                                <img
-                                  src={photo.url}
-                                  alt={`${view} ${index}`}
-                                  className="w-full h-20 object-cover rounded cursor-pointer hover:opacity-90"
-                                />
-                                <button
-                                  onClick={() => {
-                                    setProgressPhotos(prev => ({
-                                      ...prev,
-                                      [view]: prev[view].filter((_, i) => i !== index)
-                                    }));
-                                  }}
-                                  className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                                >
-                                  <Trash2 className="h-3 w-3" />
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                          {progressPhotos[view].length < 3 && (
-                            <button
-                              onClick={() => handleCameraCapture(view)}
-                              className="w-full py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors flex items-center justify-center gap-2"
-                            >
-                              <Camera className="h-4 w-4" />
-                              Añadir Foto
-                            </button>
-                          )}
-                        </div>
-                      ) : (
-                        <button
-                          onClick={() => handleCameraCapture(view)}
-                          className="w-full flex flex-col items-center justify-center h-32 border-2 border-dashed border-gray-600 rounded-lg cursor-pointer hover:border-purple-500 hover:bg-purple-500/10 transition-all"
-                        >
-                          <Camera className="h-8 w-8 text-purple-500 mb-2" />
-                          <span className="text-sm text-gray-300">Tomar Foto</span>
-                          <span className="text-xs text-gray-500 mt-1">{view}</span>
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-4 p-4 bg-purple-900/30 rounded-lg">
-                <p className="text-sm text-purple-300">
-                  📸 <strong>Consejo:</strong> Toma las fotos siempre en el mismo lugar, con la misma iluminación y a la misma hora del día para mejores comparaciones.
-                </p>
-              </div>
-            </div>
-
-            {/* Add Measurement Form */}
-            <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-white/10">
-              <h3 className="text-xl font-bold text-white mb-4">Agregar Medidas</h3>
-              <div className="grid md:grid-cols-4 gap-4">
-                <input
-                  type="number"
-                  value={newMeasurement.weight || ''}
-                  onChange={(e) => setNewMeasurement({...newMeasurement, weight: e.target.value})}
-                  step="0.1"
-                  placeholder="Peso (kg)"
-                  className="px-4 py-3 bg-gray-800 text-white rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
-                />
-                <input
-                  type="number"
-                  value={newMeasurement.bodyFat || ''}
-                  onChange={(e) => setNewMeasurement({...newMeasurement, bodyFat: e.target.value})}
-                  step="0.1"
-                  placeholder="% Grasa"
-                  className="px-4 py-3 bg-gray-800 text-white rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
-                />
-                <input
-                  type="number"
-                  value={newMeasurement.waist || ''}
-                  onChange={(e) => setNewMeasurement({...newMeasurement, waist: e.target.value})}
-                  step="0.1"
-                  placeholder="Cintura (cm)"
-                  className="px-4 py-3 bg-gray-800 text-white rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
-                />
-                <button
-                  onClick={() => {
-                    if (newMeasurement.weight && newMeasurement.bodyFat && newMeasurement.waist) {
-                      addMeasurement(newMeasurement.weight, newMeasurement.bodyFat, newMeasurement.waist);
-                    }
-                  }}
-                  className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-lg hover:shadow-xl transition-all"
-                >
-                  <Plus className="h-5 w-5 inline mr-2" />
-                  Agregar
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* History View */}
-        {currentView === 'history' && (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-white mb-6">Historial de Entrenamientos</h2>
-            
-            {workoutHistory.length === 0 ? (
-              <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-12 border border-white/10 text-center">
-                <Activity className="h-16 w-16 text-gray-600 mx-auto mb-4" />
-                <p className="text-gray-400 text-lg">No hay entrenamientos registrados aún</p>
-                <p className="text-gray-500 text-sm mt-2">Completa tu primer entrenamiento para verlo aquí</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {workoutHistory.map((session, index) => (
-                  <div
-                    key={index}
-                    className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-white/10 hover:border-purple-500/50 transition-colors"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="text-lg font-bold text-white mb-2">{session.workout}</h3>
-                        <div className="flex items-center gap-4 text-sm text-gray-400">
-                          <span className="flex items-center gap-1">
-                            <Calendar className="h-4 w-4" />
-                            {new Date(session.date).toLocaleDateString('es-ES', { 
-                              weekday: 'long', 
-                              year: 'numeric', 
-                              month: 'long', 
-                              day: 'numeric' 
-                            })}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Clock className="h-4 w-4" />
-                            {session.duration} min
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Flame className="h-4 w-4" />
-                            {session.calories} kcal
-                          </span>
-                        </div>
-                      </div>
-                      <CheckCircle className="h-8 w-8 text-green-500" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Achievements View */}
-        {currentView === 'achievements' && (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-white mb-6">Logros y Recompensas</h2>
-            
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {achievements.map((achievement) => (
-                <div
-                  key={achievement.id}
-                  className={`bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border ${
-                    achievement.unlocked
-                      ? 'border-yellow-500/50 bg-gradient-to-br from-yellow-900/20 to-orange-900/20'
-                      : 'border-white/10'
-                  }`}
-                >
-                  <div className="text-4xl mb-4">{achievement.icon}</div>
-                  <h3 className="text-lg font-bold text-white mb-2">{achievement.name}</h3>
-                  <p className="text-gray-400 text-sm">{achievement.description}</p>
-                  {achievement.unlocked && (
-                    <div className="mt-4 text-yellow-500 text-sm font-bold">✓ Desbloqueado</div>
-                  )}
-                </div>
-              ))}
-            </div>
-            
-            {/* Stats Summary */}
-            <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl p-8 text-white">
-              <h3 className="text-2xl font-bold mb-6">Resumen de Estadísticas</h3>
-              <div className="grid md:grid-cols-4 gap-6">
-                <div>
-                  <p className="text-purple-200 text-sm mb-1">Total XP</p>
-                  <p className="text-3xl font-bold">{userProfile.experience}</p>
-                </div>
-                <div>
-                  <p className="text-purple-200 text-sm mb-1">Nivel Actual</p>
-                  <p className="text-3xl font-bold">Nivel {userProfile.level}</p>
-                </div>
-                <div>
-                  <p className="text-purple-200 text-sm mb-1">Entrenamientos</p>
-                  <p className="text-3xl font-bold">{userProfile.totalWorkouts}</p>
-                </div>
-                <div>
-                  <p className="text-purple-200 text-sm mb-1">Mejor Racha</p>
-                  <p className="text-3xl font-bold">{userProfile.streak} días</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
+                    <Tab.Screen name="Panel" component={DashboardScreen} />
+                    <Tab.Screen name="Entrenar" component={WorkoutScreen} />
+                    <Tab.Screen name="Nutrici��n" component={NutritionScreen} />
+                    <Tab.Screen name="Suplementos" component={SupplementsScreen} />
+                    <Tab.Screen name="Progreso" component={ProgressScreen} />
+                </Tab.Navigator>
+            </NavigationContainer>
+        </SafeAreaView>
+    );
 }
 
-export default App;
+
+// ===================================================================================
+// ESTILOS (Normalmente ir��an en un archivo /styles.js)
+// ===================================================================================
+
+const COLORS = {
+    dark: '#0f172a',
+    primary: '#8b5cf6',
+    secondary: '#ec4899',
+    light: '#f3f4f6',
+    gray: '#6b7280',
+    success: '#10b981',
+    rest: '#0ea5e9',
+    primaryGradient: '#8b5cf6', // Simplified for non-expo gradient
+    restGradient: '#0ea5e9', // Simplified for non-expo gradient
+};
+
+const styles = StyleSheet.create({
+    container: { flex: 1, backgroundColor: COLORS.dark, padding: 16 },
+    header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
+    title: { fontSize: 28, fontWeight: 'bold', color: COLORS.light, marginBottom: 20 },
+    // Dashboard
+    heroCard: { backgroundColor: COLORS.primary, padding: 24, borderRadius: 20, alignItems: 'center' },
+    heroTitle: { fontSize: 22, fontWeight: 'bold', color: 'white' },
+    heroSubtitle: { fontSize: 16, color: 'white', opacity: 0.8, marginTop: 8 },
+    heroButtonText: { fontSize: 16, fontWeight: 'bold', color: 'white', marginTop: 24, letterSpacing: 1 },
+    // Workout
+    card: { borderRadius: 20, padding: 24, marginBottom: 20, alignItems: 'center' },
+    exerciseName: { fontSize: 24, fontWeight: 'bold', color: 'white', textAlign: 'center' },
+    setInfo: { fontSize: 18, color: 'white', opacity: 0.8, marginTop: 4 },
+    timerDisplay: { fontSize: 72, fontWeight: 'bold', color: 'white', marginVertical: 20, fontVariant: ['tabular-nums'] },
+    timerModeText: { fontSize: 16, fontWeight: '600', color: 'white', textTransform: 'uppercase', letterSpacing: 2 },
+    btnPrimary: { backgroundColor: 'white', paddingVertical: 12, paddingHorizontal: 30, borderRadius: 30, marginTop: 20 },
+    btnText: { color: COLORS.dark, fontWeight: 'bold', fontSize: 16 },
+    exerciseCard: { backgroundColor: '#1f2937', padding: 16, borderRadius: 12, marginBottom: 10, borderWidth: 1, borderColor: 'transparent' },
+    currentExerciseCard: { borderColor: COLORS.primary },
+    completedCard: { backgroundColor: COLORS.success, opacity: 0.5 },
+    exName: { color: 'white', fontSize: 16, fontWeight: '500' },
+    btnSmall: { backgroundColor: COLORS.primary, padding: 12, borderRadius: 8, marginTop: 12, alignItems: 'center' },
+    btnSmallText: { color: 'white', fontWeight: 'bold' },
+    // Nutrition
+    macroGrid: { flexDirection: 'row', justifyContent: 'space-around', marginBottom: 20 },
+    macroCard: { backgroundColor: '#1f2937', padding: 16, borderRadius: 12, alignItems: 'center', flex: 1, marginHorizontal: 5 },
+    macroValue: { color: 'white', fontSize: 24, fontWeight: 'bold' },
+    macroLabel: { color: COLORS.gray, fontSize: 12, marginTop: 4 },
+    mealCard: { backgroundColor: '#1f2937', padding: 16, borderRadius: 12, marginBottom: 12 },
+    mealHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+    mealName: { color: 'white', fontSize: 18, fontWeight: 'bold' },
+    mealTime: { color: COLORS.primary, backgroundColor: 'rgba(139, 92, 246, 0.2)', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12, fontSize: 12 },
+    mealItems: { color: COLORS.light, lineHeight: 22, marginBottom: 12 },
+    mealMacros: { color: COLORS.gray, fontSize: 12, paddingTop: 8, borderTopWidth: 1, borderTopColor: '#374151' },
+    // Supplements
+    supplementBlock: { backgroundColor: '#1f2937', borderRadius: 16, padding: 20, marginBottom: 20 },
+    supplementTitle: { color: COLORS.primary, fontSize: 18, fontWeight: 'bold', marginBottom: 16 },
+    supplementItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 12 },
+    supplementName: { color: 'white', fontSize: 16 },
+    supplementDose: { color: COLORS.gray, fontSize: 12, marginTop: 4 },
+    supplementCheck: { width: 28, height: 28, borderRadius: 14, borderWidth: 2, borderColor: COLORS.gray, justifyContent: 'center', alignItems: 'center' },
+    supplementChecked: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
+    // Progress
+    progressLabel: { color: COLORS.gray, fontSize: 18, textAlign: 'center' },
+});
